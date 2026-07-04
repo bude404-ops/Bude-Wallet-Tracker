@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BUDE Token + Wallet Tracker</title>
+<style>
+:root{--bg:#0b0f19;--card:#111827;--accent:#00d4aa;--text:#e2e8f0;--muted:#94a3b8;--danger:#ef4444;--gold:#f59e0b;--sol:#9945ff;--funder:#a855f7;--bot:#ff6b6b;--sniper:#ffd93d;--deployer:#6bcb77;--node-main:#00d4aa;--node-l1:#ef4444;--node-l2:#f59e0b;--node-l3:#8b5cf6;--node-in:#22c55e;--line:#374151;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;padding:12px;min-height:100vh}
+h1{text-align:center;font-size:1.4rem;margin-bottom:8px;color:var(--accent)}
+.subtitle{text-align:center;color:var(--muted);font-size:0.85rem;margin-bottom:16px}
+.card{background:var(--card);border:1px solid #1f2937;border-radius:12px;padding:14px;margin-bottom:12px}
+label{display:block;color:var(--muted);font-size:0.8rem;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+input,select,button{width:100%;padding:12px;border-radius:8px;border:1px solid #374151;background:#0b0f19;color:var(--text);font-size:1rem;margin-bottom:8px}
+button{background:var(--accent);color:#000;font-weight:700;border:none;cursor:pointer;transition:opacity .2s}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:active{transform:scale(.98)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:#0b0f19;border-radius:8px;padding:10px;text-align:center}
+.stat-value{font-size:1.1rem;font-weight:700;color:var(--accent)}
+.stat-label{font-size:.7rem;color:var(--muted);margin-top:2px}
+.wallet-row{display:flex;align-items:center;justify-content:space-between;padding:10px;border-bottom:1px solid #1f2937;cursor:pointer}
+.wallet-row:last-child{border-bottom:none}
+.wallet-addr{font-family:monospace;font-size:.8rem;word-break:break-all;flex:1}
+.wallet-tag{font-size:.65rem;padding:2px 8px;border-radius:4px;background:#1e3a5f;color:#60a5fa;margin-left:8px;white-space:nowrap}
+.wallet-tag.main{background:#14532d;color:var(--accent)}
+.wallet-tag.funder{background:#581c87;color:#e9d5ff}
+.wallet-tag.bot{background:#7f1d1d;color:var(--bot)}
+.wallet-tag.sniper{background:#713f12;color:var(--sniper)}
+.wallet-tag.deployer{background:#14532d;color:var(--deployer)}
+.wallet-tag.l1{background:#450a0a;color:var(--danger)}
+.wallet-tag.l2{background:#451a03;color:var(--gold)}
+.wallet-tag.l3{background:#2e1065;color:#c4b5fd}
+.wallet-balance{font-size:.85rem;font-weight:600;margin-left:8px;white-space:nowrap}
+.tx-row{padding:8px;border-bottom:1px solid #1f2937;font-size:.8rem}
+.tx-row:last-child{border-bottom:none}
+.tx-hash{font-family:monospace;color:var(--accent);word-break:break-all}
+.tx-dir{display:inline-block;padding:2px 6px;border-radius:4px;font-size:.7rem;font-weight:700;margin-right:6px}
+.tx-in{background:#14532d;color:var(--accent)}
+.tx-out{background:#450a0a;color:var(--danger)}
+.tabs{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto}
+.tab{flex:1;padding:10px;text-align:center;background:#0b0f19;border:1px solid #374151;border-radius:8px;cursor:pointer;font-size:.85rem;white-space:nowrap;min-width:80px}
+.tab.active{background:var(--accent);color:#000;font-weight:700;border-color:var(--accent)}
+.panel{display:none}
+.panel.active{display:block}
+.copy-btn{background:#1f2937;color:var(--text);font-size:.75rem;padding:4px 10px;border-radius:6px;border:1px solid #374151;cursor:pointer;margin-left:8px}
+.copy-btn:active{background:#374151}
+.loading{text-align:center;color:var(--muted);padding:20px;font-size:.9rem}
+.error{color:var(--danger);text-align:center;padding:12px;font-size:.85rem}
+.hidden{display:none}
+.progress-bar{height:4px;background:#1f2937;border-radius:2px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;background:var(--accent);width:0%;transition:width .3s}
+.depth-toggle{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.depth-btn{padding:6px 12px;border-radius:6px;border:1px solid #374151;background:#0b0f19;color:var(--text);font-size:.8rem;cursor:pointer}
+.depth-btn.active{background:var(--accent);color:#000;font-weight:700;border-color:var(--accent)}
+.toggle-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.toggle-switch{position:relative;width:44px;height:24px}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#374151;border-radius:24px;transition:.3s}
+.toggle-slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:var(--text);border-radius:50%;transition:.3s}
+input:checked + .toggle-slider{background:var(--accent)}
+input:checked + .toggle-slider:before{transform:translateX(20px);background:#000}
+.toggle-label{font-size:.8rem;color:var(--muted)}
+.badge-row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.badge{font-size:.7rem;padding:3px 10px;border-radius:6px;background:#1f2937;color:var(--text);border:1px solid #374151}
+.badge.warn{background:#451a03;color:var(--gold);border-color:var(--gold)}
+.badge.danger{background:#450a0a;color:var(--danger);border-color:var(--danger)}
+.badge.safe{background:#14532d;color:var(--accent);border-color:var(--accent)}
+.risk-meter{height:6px;background:#1f2937;border-radius:3px;overflow:hidden;margin:8px 0}
+.risk-fill{height:100%;border-radius:3px;transition:width .5s}
+.token-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.token-icon{width:48px;height:48px;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.token-info{flex:1}
+.token-name{font-size:1.1rem;font-weight:700}
+.token-ca{font-family:monospace;font-size:.7rem;color:var(--muted);margin-top:2px}
+#mapContainer{position:relative;width:100%;height:550px;background:#0b0f19;border:1px solid #1f2937;border-radius:12px;overflow:hidden;cursor:grab}
+#mapContainer:active{cursor:grabbing}
+#bubbleMap{width:100%;height:100%}
+.map-legend{position:absolute;top:10px;left:10px;background:rgba(17,24,39,.95);border:1px solid #374151;border-radius:8px;padding:10px;font-size:.65rem;z-index:10;max-width:160px}
+.map-legend-item{display:flex;align-items:center;margin-bottom:3px}
+.map-legend-dot{width:8px;height:8px;border-radius:50%;margin-right:5px}
+.map-controls{position:absolute;bottom:10px;right:10px;display:flex;gap:4px;z-index:10}
+.map-btn{background:#1f2937;color:var(--text);border:1px solid #374151;border-radius:6px;width:36px;height:36px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.map-btn:active{background:#374151}
+.map-tooltip{position:absolute;background:rgba(17,24,39,.98);border:1px solid #374151;border-radius:8px;padding:12px;font-size:.75rem;pointer-events:none;z-index:20;display:none;max-width:280px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.map-tooltip strong{color:var(--accent)}
+.map-stats{position:absolute;top:10px;right:10px;background:rgba(17,24,39,.95);border:1px solid #374151;border-radius:8px;padding:10px;font-size:.65rem;z-index:10;text-align:right}
+.map-stats-value{color:var(--accent);font-weight:700;font-size:.85rem}
+@media(max-width:400px){.grid{grid-template-columns:1fr}.wallet-row{flex-direction:column;align-items:flex-start}.wallet-balance{margin-left:0;margin-top:4px}#mapContainer{height:400px}.map-legend{font-size:.6rem;padding:6px}.tabs{font-size:.75rem}}
+@media(max-width:600px){#mapContainer{height:450px}}
+</style>
+</head>
+<body>
+
+<h1>🔍 BUDE Token + Wallet Tracker</h1>
+<p class="subtitle">CA First · Bot Detection · Deep Bubble Map + Funders</p>
+
+<div class="card" id="caSection">
+  <label>Step 1: Contract Address (Token CA)</label>
+  <input type="text" id="caInput" placeholder="Enter token contract address..." autocomplete="off">
+  <label>Blockchain</label>
+  <select id="chain">
+    <option value="sol">Solana (SOL)</option>
+    <option value="eth">Ethereum (ETH)</option>
+    <option value="btc">Bitcoin (BTC)</option>
+    <option value="doge">Dogecoin (DOGE)</option>
+    <option value="ltc">Litecoin (LTC)</option>
+  </select>
+  <div class="toggle-row">
+    <label class="toggle-switch">
+      <input type="checkbox" id="detectBots" checked>
+      <span class="toggle-slider"></span>
+    </label>
+    <span class="toggle-label">Auto-detect bot wallets & snipers</span>
+  </div>
+  <button id="analyzeCaBtn" onclick="analyzeCA()">🔬 Analyze Contract</button>
+  <div class="progress-bar hidden" id="caProgBar"><div class="progress-fill" id="caProgFill"></div></div>
+</div>
+
+<div class="card hidden" id="walletSection">
+  <label>Step 2: Track Specific Wallet</label>
+  <input type="text" id="addr" placeholder="Enter wallet address..." autocomplete="off">
+  <label>Depth (How many hops deep)</label>
+  <div class="depth-toggle">
+    <button class="depth-btn active" onclick="setDepth(1)" id="d1">1 Hop</button>
+    <button class="depth-btn" onclick="setDepth(2)" id="d2">2 Hops</button>
+    <button class="depth-btn" onclick="setDepth(3)" id="d3">3 Hops</button>
+  </div>
+  <div class="toggle-row">
+    <label class="toggle-switch">
+      <input type="checkbox" id="trackFunders" checked>
+      <span class="toggle-slider"></span>
+    </label>
+    <span class="toggle-label">Track who funded this wallet (incoming TXs)</span>
+  </div>
+  <button id="trackBtn" onclick="track()">🔎 Track Deep Network</button>
+  <div class="progress-bar hidden" id="progBar"><div class="progress-fill" id="progFill"></div></div>
+</div>
+
+<div id="resultArea" class="hidden">
+  <div class="tabs">
+    <div class="tab active" onclick="showPanel('token')">🪙 Token</div>
+    <div class="tab" onclick="showPanel('bots')">🤖 Bots</div>
+    <div class="tab" onclick="showPanel('overview')">👤 Wallet</div>
+    <div class="tab" onclick="showPanel('map')">🕸️ Deep Map</div>
+    <div class="tab" onclick="showPanel('funders')">💰 Funders</div>
+    <div class="tab" onclick="showPanel('derived')">Network</div>
+    <div class="tab" onclick="showPanel('txs')">TXs</div>
+  </div>
+
+  <div id="panel-token" class="panel active">
+    <div class="card" id="tokenCard"><div class="loading">Analyze a contract address to see token details...</div></div>
+    <div class="card hidden" id="tokenHoldersCard"><label>Top Holders</label><div id="holdersList"></div></div>
+    <div class="card hidden" id="tokenRiskCard"><label>Risk Analysis</label><div id="riskContent"></div></div>
+  </div>
+
+  <div id="panel-bots" class="panel">
+    <div class="card" id="botsCard"><div class="loading">Bot detection runs during CA analysis...</div></div>
+    <div class="card hidden" id="botWalletsCard"><label>Detected Bot / Sniper Wallets</label><div id="botList"></div></div>
+    <div class="card hidden" id="botFlowsCard"><label>Where Bot Money Flows</label><div id="botFlowList"></div></div>
+  </div>
+
+  <div id="panel-overview" class="panel">
+    <div class="card">
+      <div class="grid">
+        <div class="stat"><div class="stat-value" id="mainBal">—</div><div class="stat-label">Balance</div></div>
+        <div class="stat"><div class="stat-value" id="mainTx">—</div><div class="stat-label">Total TXs</div></div>
+        <div class="stat"><div class="stat-value" id="derivedCount">—</div><div class="stat-label">Network Wallets</div></div>
+        <div class="stat"><div class="stat-value" id="funderCount">—</div><div class="stat-label">Funders</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <label>Main Wallet</label>
+      <div class="wallet-row" style="cursor:default">
+        <span class="wallet-addr" id="mainAddrDisplay"></span>
+        <span class="wallet-tag main">MAIN</span>
+        <button class="copy-btn" onclick="copyText(document.getElementById('mainAddrDisplay').textContent)">Copy</button>
+      </div>
+    </div>
+    <div class="card" id="topFunderCard" style="display:none">
+      <label>Biggest Funder</label>
+      <div id="topFunderContent"></div>
+    </div>
+  </div>
+
+  <div id="panel-map" class="panel">
+    <div class="card" style="padding:0;overflow:hidden">
+      <div id="mapContainer">
+        <svg id="bubbleMap" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="map-legend">
+          <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--node-main)"></div> Main</div>
+          <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--funder)"></div> Funder</div>
+          <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--bot)"></div> Bot</div>
+          <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--sniper)"></div> Sniper</div>
+          <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--node-l1)"></div> 1st Hop</div>
+          <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--node-l2)"></div> 2nd Hop</div>
+          <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--node-l3)"></div> 3rd Hop</div>
+          <div class="map-legend-item" style="margin-top:4px;font-size:.55rem;color:var(--muted)">Drag·Scroll·Click nodes</div>
+        </div>
+        <div class="map-stats">
+          <div class="map-stats-value" id="mapNodeCount">0</div><div style="color:var(--muted)">Nodes</div>
+          <div class="map-stats-value" id="mapEdgeCount" style="margin-top:4px">0</div><div style="color:var(--muted)">Links</div>
+          <div class="map-stats-value" id="mapFunderCount" style="margin-top:4px">0</div><div style="color:var(--muted)">Funders</div>
+          <div class="map-stats-value" id="mapBotCount" style="margin-top:4px">0</div><div style="color:var(--muted)">Bots</div>
+        </div>
+        <div class="map-controls">
+          <button class="map-btn" onclick="zoomMap(1.2)">+</button>
+          <button class="map-btn" onclick="zoomMap(0.8)">−</button>
+          <button class="map-btn" onclick="resetMap()">⟲</button>
+        </div>
+        <div class="map-tooltip" id="mapTooltip"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-funders" class="panel">
+    <div class="card" id="funderList"><div class="loading">Click Track to discover who funded this wallet...</div></div>
+  </div>
+
+  <div id="panel-derived" class="panel">
+    <div class="card" id="derivedList"><div class="loading">Click Track to discover the deep network...</div></div>
+  </div>
+
+  <div id="panel-txs" class="panel">
+    <div class="card" id="txList"><div class="loading">Transactions will appear here...</div></div>
+  </div>
+</div>
+
+<div id="status" class="hidden"></div>
+
+<script>
+const ENDPOINTS = {
+  btc: [
+    { url: function(addr){ return 'https://api.blockcypher.com/v1/btc/main/addrs/' + addr + '/full?limit=50'; }, type: 'blockcypher', weight: 1 },
+    { url: function(addr){ return 'https://blockchain.info/rawaddr/' + addr + '?limit=50'; }, type: 'blockchaininfo', weight: 2 }
+  ],
+  eth: [
+    { url: function(addr){ return 'https://api.blockcypher.com/v1/eth/main/addrs/' + addr + '/full?limit=50'; }, type: 'blockcypher', weight: 1 },
+    { url: function(addr){ return 'https://api.ethplorer.io/getAddressInfo/' + addr + '?apiKey=free'; }, type: 'ethplorer', weight: 2 }
+  ],
+  sol: [
+    { url: function(){ return 'https://api.mainnet.solana.com'; }, type: 'solana', weight: 1 },
+    { url: function(){ return 'https://solana-api.projectserum.com'; }, type: 'solana', weight: 2 },
+    { url: function(){ return 'https://rpc.ankr.com/solana'; }, type: 'solana', weight: 3 }
+  ],
+  doge: [
+    { url: function(addr){ return 'https://api.blockcypher.com/v1/doge/main/addrs/' + addr + '/full?limit=50'; }, type: 'blockcypher', weight: 1 },
+    { url: function(addr){ return 'https://dogechain.info/api/v1/address/balance/' + addr; }, type: 'dogechain', weight: 2 }
+  ],
+  ltc: [
+    { url: function(addr){ return 'https://api.blockcypher.com/v1/ltc/main/addrs/' + addr + '/full?limit=50'; }, type: 'blockcypher', weight: 1 },
+    { url: function(addr){ return 'https://api.blockchair.com/litecoin/dashboards/address/' + addr + '?limit=50'; }, type: 'blockchair', weight: 2 }
+  ]
+};
+
+const SYM = {btc:'BTC',eth:'ETH',sol:'SOL',doge:'DOGE',ltc:'LTC'};
+const DEC = {btc:1e8,eth:1e18,sol:1e9,doge:1e8,ltc:1e8};
+const NODE_COLORS = {main:'var(--node-main)',funder:'var(--funder)',bot:'var(--bot)',sniper:'var(--sniper)',deployer:'var(--deployer)',l1:'var(--node-l1)',l2:'var(--node-l2)',l3:'var(--node-l3)'};
+
+let globalData = { main: null, network: [], funders: [], txs: [], token: null, bots: [] };
+let mapState = { zoom: 1, panX: 0, panY: 0, dragging: false, lastX: 0, lastY: 0 };
+let maxDepth = 1;
+let caData = { address: null, chain: null, tokenInfo: null, holders: [], botWallets: [], flows: [] };
+
+function setDepth(d){
+  maxDepth = d;
+  document.querySelectorAll('.depth-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('d'+d).classList.add('active');
+}
+
+function showPanel(id){
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+  event.target.classList.add('active');
+  document.getElementById('panel-'+id).classList.add('active');
+  if(id === 'map') setTimeout(drawBubbleMap, 100);
+}
+
+function status(msg, isError){
+  isError = isError || false;
+  const el = document.getElementById('status');
+  el.classList.remove('hidden');
+  el.innerHTML = '<div class="' + (isError ? 'error' : 'loading') + '">' + msg + '</div>';
+}
+
+function hideStatus(){ document.getElementById('status').classList.add('hidden'); }
+
+function setProgress(pct){
+  const bar = document.getElementById('progBar');
+  const fill = document.getElementById('progFill');
+  bar.classList.remove('hidden');
+  fill.style.width = pct + '%';
+  if(pct >= 100) setTimeout(function(){ bar.classList.add('hidden'); }, 500);
+}
+
+function setCAProgress(pct){
+  const bar = document.getElementById('caProgBar');
+  const fill = document.getElementById('caProgFill');
+  bar.classList.remove('hidden');
+  fill.style.width = pct + '%';
+  if(pct >= 100) setTimeout(function(){ bar.classList.add('hidden'); }, 500);
+}
+
+async function fetchWithTimeout(url, ms){
+  const ctrl = new AbortController();
+  const t = setTimeout(function(){ ctrl.abort(); }, ms);
+  const res = await fetch(url, {signal: ctrl.signal});
+  clearTimeout(t);
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+
+function truncate(addr){ return addr.substring(0, 6) + '...' + addr.substring(addr.length - 4); }
+
+function formatNumber(n){
+  if(n >= 1e9) return (n/1e9).toFixed(2) + 'B';
+  if(n >= 1e6) return (n/1e6).toFixed(2) + 'M';
+  if(n >= 1e3) return (n/1e3).toFixed(2) + 'K';
+  return n.toFixed(2);
+}
+
+// ============ CA ANALYSIS ============
+async function analyzeCA(){
+  const ca = document.getElementById('caInput').value.trim();
+  const chain = document.getElementById('chain').value;
+  const detectBots = document.getElementById('detectBots').checked;
+  if(!ca){ status('Enter a contract address', true); return; }
+  document.getElementById('analyzeCaBtn').disabled = true;
+  document.getElementById('resultArea').classList.remove('hidden');
+  setCAProgress(5);
+  status('Analyzing contract ' + truncate(ca) + ' on ' + SYM[chain] + '...');
+  caData = { address: ca, chain: chain, tokenInfo: null, holders: [], botWallets: [], flows: [] };
+  try {
+    let tokenInfo, holders;
+    if(chain === 'sol'){
+      const result = await fetchSolanaToken(ca);
+      tokenInfo = result.tokenInfo; holders = result.holders;
+    } else if(chain === 'eth'){
+      const result = await fetchEthToken(ca);
+      tokenInfo = result.tokenInfo; holders = result.holders;
+    } else {
+      tokenInfo = { name: 'Unknown Token', symbol: SYM[chain], supply: 0, decimals: 9 };
+      holders = [];
+    }
+    caData.tokenInfo = tokenInfo;
+    caData.holders = holders.slice(0, 20);
+    setCAProgress(30);
+    let botWallets = [];
+    if(detectBots && holders.length > 0){
+      status('Detecting bot wallets & snipers...');
+      botWallets = await detectBotWallets(chain, ca, holders);
+    }
+    caData.botWallets = botWallets;
+    setCAProgress(60);
+    let flows = [];
+    if(botWallets.length > 0 && detectBots){
+      status('Tracing bot money flows...');
+      flows = await traceBotFlows(chain, botWallets.slice(0, 5));
+    }
+    caData.flows = flows;
+    document.getElementById('walletSection').classList.remove('hidden');
+    if(botWallets.length > 0 && botWallets[0].type === 'deployer'){
+      document.getElementById('addr').value = botWallets[0].address;
+    }
+    setCAProgress(100);
+    renderCA(); renderBots(); hideStatus();
+    showPanel('token');
+  } catch(e) {
+    console.error(e);
+    status('CA Analysis Error: ' + e.message, true);
+    setCAProgress(0);
+  }
+  document.getElementById('analyzeCaBtn').disabled = false;
+}
+
+async function fetchSolanaToken(ca){
+  const rpcUrl = 'https://api.mainnet.solana.com';
+  const [supplyRes, largestRes] = await Promise.all([
+    fetch(rpcUrl, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({jsonrpc:'2.0',id:1,method:'getTokenSupply',params:[ca]})}),
+    fetch(rpcUrl, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({jsonrpc:'2.0',id:2,method:'getTokenLargestAccounts',params:[ca]})})
+  ]);
+  const [supplyData, largestData] = await Promise.all([supplyRes.json(), largestRes.json()]);
+  const supply = supplyData.result && supplyData.result.value ? supplyData.result.value.uiAmount || 0 : 0;
+  const decimals = supplyData.result && supplyData.result.value ? supplyData.result.value.decimals || 9 : 9;
+  const rawAccounts = largestData.result && largestData.result.value ? largestData.result.value : [];
+  const holders = [];
+  for(let i = 0; i < Math.min(rawAccounts.length, 15); i++){
+    const acc = rawAccounts[i];
+    holders.push({ address: acc.address || 'unknown', amount: acc.uiAmount || 0, pct: supply > 0 ? ((acc.uiAmount || 0) / supply * 100).toFixed(2) : '0.00' });
+  }
+  return { tokenInfo: { name: 'SPL Token', symbol: 'TOKEN', supply: supply, decimals: decimals, ca: ca }, holders: holders };
+}
+
+async function fetchEthToken(ca){
+  try {
+    const res = await fetchWithTimeout('https://api.ethplorer.io/getTokenInfo/' + ca + '?apiKey=free', 8000);
+    const holdersRes = await fetchWithTimeout('https://api.ethplorer.io/getTopTokenHolders/' + ca + '?apiKey=free&limit=20', 8000);
+    const info = { name: res.name || 'Unknown', symbol: res.symbol || '???', supply: res.totalSupply ? parseFloat(res.totalSupply) : 0, decimals: res.decimals || 18, ca: ca, price: res.price && res.price.rate ? res.price.rate : 0, holdersCount: res.holdersCount || 0 };
+    const holders = (holdersRes.holders || []).map(function(h){ return { address: h.address, amount: h.balance ? parseFloat(h.balance) : 0, pct: h.share || '0.00' }; });
+    return { tokenInfo: info, holders: holders };
+  } catch(e) { return { tokenInfo: {name:'Unknown',symbol:'???',supply:0,decimals:18,ca:ca}, holders:[] }; }
+}
+
+async function detectBotWallets(chain, ca, holders){
+  const bots = [];
+  const seen = new Set();
+  if(chain === 'sol'){
+    for(let h = 0; h < Math.min(holders.length, 10); h++){
+      const holder = holders[h];
+      if(seen.has(holder.address)) continue;
+      seen.add(holder.address);
+      try {
+        const sigs = await fetchSolanaSigs(holder.address, 10);
+        const isSniper = sigs.length <= 2 && holder.amount > 0;
+        const isBot = sigs.length > 20;
+        if(isSniper){ bots.push({ address: holder.address, type: 'sniper', reason: 'Low TX count + early holder', amount: holder.amount, pct: holder.pct }); }
+        else if(isBot){ bots.push({ address: holder.address, type: 'bot', reason: 'High TX activity', amount: holder.amount, pct: holder.pct }); }
+        else if(sigs.length > 0){
+          const firstTx = await fetchSolanaFirstTx(holder.address);
+          if(firstTx && firstTx.funder){
+            const clusterMatch = bots.find(function(b){ return b.funder === firstTx.funder; });
+            if(clusterMatch){ bots.push({ address: holder.address, type: 'cluster', reason: 'Same funder as ' + clusterMatch.type, amount: holder.amount, pct: holder.pct, funder: firstTx.funder }); }
+          }
+        }
+      } catch(e) {}
+    }
+  } else if(chain === 'eth'){
+    for(let h = 0; h < Math.min(holders.length, 10); h++){
+      const holder = holders[h];
+      if(seen.has(holder.address)) continue;
+      seen.add(holder.address);
+      const pct = parseFloat(holder.pct) || 0;
+      if(pct > 5 && pct < 20){ bots.push({ address: holder.address, type: 'whale', reason: 'Large holder ' + pct + '%', amount: holder.amount, pct: holder.pct }); }
+      else if(pct < 1 && holder.amount > 0){ bots.push({ address: holder.address, type: 'sniper', reason: 'Small early position', amount: holder.amount, pct: holder.pct }); }
+    }
+  }
+  if(holders.length > 0 && !bots.find(function(b){ return b.type === 'deployer'; })){
+    bots.unshift({ address: holders[0].address, type: 'deployer', reason: 'Largest holder / possible deployer', amount: holders[0].amount, pct: holders[0].pct });
+  }
+  return bots;
+}
+
+async function fetchSolanaSigs(addr, limit){
+  try {
+    const res = await fetch('https://api.mainnet.solana.com', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({jsonrpc:'2.0',id:1,method:'getSignaturesForAddress',params:[addr,{limit:limit}]})});
+    const data = await res.json();
+    return data.result || [];
+  } catch(e){ return []; }
+}
+
+async function fetchSolanaFirstTx(addr){
+  try {
+    const sigs = await fetchSolanaSigs(addr, 1);
+    if(sigs.length === 0) return null;
+    const tx = await fetchSolanaTx('https://api.mainnet.solana.com', sigs[0].signature, addr);
+    if(tx && tx.inputs.length > 0){ return { funder: tx.inputs[0], time: tx.time }; }
+    return null;
+  } catch(e){ return null; }
+}
+
+async function traceBotFlows(chain, botWallets){
+  const flows = [];
+  for(let b = 0; b < botWallets.length; b++){
+    const bot = botWallets[b];
+    try {
+      if(chain === 'sol'){
+        const sigs = await fetchSolanaSigs(bot.address, 15);
+        const destinations = new Map();
+        for(let s = 0; s < sigs.length; s++){
+          const tx = await fetchSolanaTx('https://api.mainnet.solana.com', sigs[s].signature, bot.address);
+          if(tx && tx.direction === 'out'){
+            for(let o = 0; o < tx.outputs.length; o++){
+              const out = tx.outputs[o];
+              if(out !== bot.address){
+                const existing = destinations.get(out) || {address: out, count: 0, total: 0};
+                existing.count += 1; existing.total += tx.amount;
+                destinations.set(out, existing);
+              }
+            }
+          }
+        }
+        const topDests = Array.from(destinations.values()).sort(function(a,b){ return b.total - a.total; }).slice(0, 3);
+        if(topDests.length > 0){ flows.push({ source: bot.address, botType: bot.type, destinations: topDests }); }
+      }
+    } catch(e) {}
+  }
+  return flows;
+}
+function renderCA(){
+  const t = caData.tokenInfo;
+  const chain = caData.chain;
+  const tokenCard = document.getElementById('tokenCard');
+  if(!t){ tokenCard.innerHTML = '<div class="loading">No token data available.</div>'; return; }
+  let riskScore = 0;
+  let riskReasons = [];
+  const topHolderPct = caData.holders.length > 0 ? parseFloat(caData.holders[0].pct) : 0;
+  if(topHolderPct > 50){ riskScore += 40; riskReasons.push('Deployer holds ' + topHolderPct + '%'); }
+  else if(topHolderPct > 20){ riskScore += 25; riskReasons.push('Top holder has ' + topHolderPct + '%'); }
+  if(caData.holders.length < 5){ riskScore += 20; riskReasons.push('Very few holders'); }
+  if(caData.botWallets.length > 5){ riskScore += 20; riskReasons.push('High bot activity detected'); }
+  const botPct = caData.botWallets.reduce(function(a,b){ return a + (parseFloat(b.pct)||0); }, 0);
+  if(botPct > 30){ riskScore += 15; riskReasons.push('Bots hold ' + botPct.toFixed(1) + '%'); }
+  riskScore = Math.min(100, riskScore);
+  const riskClass = riskScore < 30 ? 'safe' : riskScore < 60 ? 'warn' : 'danger';
+  const riskLabel = riskScore < 30 ? 'LOW RISK' : riskScore < 60 ? 'MEDIUM RISK' : 'HIGH RISK';
+  const riskColor = riskScore < 30 ? 'var(--accent)' : riskScore < 60 ? 'var(--gold)' : 'var(--danger)';
+  tokenCard.innerHTML = 
+    '<div class="token-header">' +
+      '<div class="token-icon">🪙</div>' +
+      '<div class="token-info">' +
+        '<div class="token-name">' + (t.name || 'Unknown') + ' (' + (t.symbol || '???') + ')</div>' +
+        '<div class="token-ca">' + caData.address + '</div>' +
+      '</div>' +
+      '<button class="copy-btn" onclick="copyText(\'' + caData.address + '\')">Copy CA</button>' +
+    '</div>' +
+    '<div class="badge-row">' +
+      '<span class="badge">Supply: ' + formatNumber(t.supply) + '</span>' +
+      '<span class="badge">Holders: ' + (t.holdersCount || caData.holders.length) + '</span>' +
+      (t.price ? '<span class="badge">$' + t.price.toFixed(6) + '</span>' : '') +
+      '<span class="badge ' + riskClass + '">' + riskLabel + '</span>' +
+    '</div>' +
+    '<div style="font-size:.8rem;color:var(--muted);margin-top:8px">Risk Score</div>' +
+    '<div class="risk-meter"><div class="risk-fill" style="width:' + riskScore + '%;background:' + riskColor + '"></div></div>' +
+    '<div style="font-size:.75rem;color:var(--muted);margin-top:4px">' + (riskReasons.length > 0 ? riskReasons.join(' · ') : 'No major red flags') + '</div>';
+  const holdersCard = document.getElementById('tokenHoldersCard');
+  const holdersList = document.getElementById('holdersList');
+  if(caData.holders.length > 0){
+    holdersCard.classList.remove('hidden');
+    holdersList.innerHTML = caData.holders.map(function(h, i){
+      const isBot = caData.botWallets.find(function(b){ return b.address === h.address; });
+      return '<div class="wallet-row" onclick="document.getElementById(\'addr\').value=\'' + h.address + '\';window.scrollTo(0,0);document.getElementById(\'walletSection\').scrollIntoView({behavior:\'smooth\'})">' +
+        '<span class="wallet-addr">' + h.address + '</span>' +
+        (isBot ? '<span class="wallet-tag ' + isBot.type + '">' + isBot.type.toUpperCase() + '</span>' : '<span class="wallet-tag">#' + (i+1) + '</span>') +
+        '<span class="wallet-balance">' + h.pct + '%</span>' +
+        '<button class="copy-btn" onclick="event.stopPropagation();copyText(\'' + h.address + '\')">Copy</button>' +
+      '</div>';
+    }).join('');
+  }
+  const riskCard = document.getElementById('tokenRiskCard');
+  const riskContent = document.getElementById('riskContent');
+  riskCard.classList.remove('hidden');
+  riskContent.innerHTML = 
+    '<div style="font-size:.85rem;margin-bottom:8px"><strong style="color:' + riskColor + '">' + riskLabel + ' (' + riskScore + '/100)</strong></div>' +
+    '<div style="font-size:.8rem;color:var(--muted)">' +
+    (riskReasons.length > 0 ? riskReasons.map(function(r){ return '• ' + r; }).join('<br>') : '• No significant risk factors detected') +
+    '</div>' +
+    '<div style="margin-top:12px;font-size:.75rem;color:var(--muted)">Click any holder above to track their wallet network.</div>';
+}
+
+function renderBots(){
+  const botsCard = document.getElementById('botsCard');
+  const botWalletsCard = document.getElementById('botWalletsCard');
+  const botList = document.getElementById('botList');
+  const botFlowsCard = document.getElementById('botFlowsCard');
+  const botFlowList = document.getElementById('botFlowList');
+  if(caData.botWallets.length === 0){
+    botsCard.innerHTML = '<div class="loading">No bot wallets detected.<br><small>Enable "Auto-detect bot wallets" in CA analysis.</small></div>';
+    botWalletsCard.classList.add('hidden');
+    botFlowsCard.classList.add('hidden');
+    return;
+  }
+  botsCard.innerHTML = 
+    '<div class="grid">' +
+      '<div class="stat"><div class="stat-value" style="color:var(--bot)">' + caData.botWallets.filter(function(b){ return b.type === 'bot'; }).length + '</div><div class="stat-label">Bots</div></div>' +
+      '<div class="stat"><div class="stat-value" style="color:var(--sniper)">' + caData.botWallets.filter(function(b){ return b.type === 'sniper'; }).length + '</div><div class="stat-label">Snipers</div></div>' +
+      '<div class="stat"><div class="stat-value" style="color:var(--deployer)">' + caData.botWallets.filter(function(b){ return b.type === 'deployer'; }).length + '</div><div class="stat-label">Deployers</div></div>' +
+      '<div class="stat"><div class="stat-value">' + caData.botWallets.filter(function(b){ return b.type === 'cluster'; }).length + '</div><div class="stat-label">Clusters</div></div>' +
+    '</div>';
+  botWalletsCard.classList.remove('hidden');
+  botList.innerHTML = caData.botWallets.map(function(b, i){
+    return '<div class="wallet-row" onclick="document.getElementById(\'addr\').value=\'' + b.address + '\';window.scrollTo(0,0);document.getElementById(\'walletSection\').scrollIntoView({behavior:\'smooth\'})">' +
+      '<span class="wallet-addr">' + b.address + '</span>' +
+      '<span class="wallet-tag ' + b.type + '">' + b.type.toUpperCase() + '</span>' +
+      '<span class="wallet-balance">' + (b.pct || '0') + '%</span>' +
+      '<button class="copy-btn" onclick="event.stopPropagation();copyText(\'' + b.address + '\')">Copy</button>' +
+    '</div>' +
+    '<div style="font-size:.7rem;color:var(--muted);padding:0 10px 8px 10px">' + b.reason + (b.funder ? ' · Funder: ' + truncate(b.funder) : '') + '</div>';
+  }).join('');
+  if(caData.flows.length > 0){
+    botFlowsCard.classList.remove('hidden');
+    botFlowList.innerHTML = caData.flows.map(function(flow){
+      return '<div style="margin-bottom:12px;padding:10px;background:#0b0f19;border-radius:8px">' +
+        '<div style="font-size:.8rem;font-weight:700;color:var(--' + flow.botType + ')">🤖 ' + flow.botType.toUpperCase() + ': ' + truncate(flow.source) + '</div>' +
+        '<div style="font-size:.75rem;color:var(--muted);margin-top:4px">Money flows to:</div>' +
+        flow.destinations.map(function(d){
+          return '<div class="wallet-row" style="padding:6px 0;border-bottom:1px solid #1f2937" onclick="document.getElementById(\'addr\').value=\'' + d.address + '\';window.scrollTo(0,0)">' +
+            '<span class="wallet-addr" style="font-size:.75rem">' + d.address + '</span>' +
+            '<span class="wallet-balance" style="font-size:.75rem">' + d.count + ' TXs · ' + d.total.toFixed(4) + ' SOL</span>' +
+          '</div>';
+        }).join('') +
+      '</div>';
+    }).join('');
+  } else { botFlowsCard.classList.add('hidden'); }
+}
+
+// ============ WALLET TRACKING ============
+async function fetchFastest(chain, addr, timeoutMs){
+  timeoutMs = timeoutMs || 6000;
+  const endpoints = ENDPOINTS[chain];
+  const promises = endpoints.map(async function(ep){
+    try {
+      const start = performance.now();
+      let data;
+      if(ep.type === 'solana'){
+        data = await fetchSolanaRPC(ep.url(), addr, timeoutMs);
+      } else {
+        const res = await fetchWithTimeout(ep.url(addr), timeoutMs);
+        if(ep.type === 'blockchaininfo') data = parseBlockchainInfo(res, addr);
+        else if(ep.type === 'ethplorer') data = parseEthplorer(res, addr);
+        else if(ep.type === 'dogechain') data = parseDogeChain(res, addr);
+        else if(ep.type === 'blockchair') data = parseBlockchair(res, addr);
+        else data = parseBlockcypher(res, addr, chain);
+      }
+      return { data: data, speed: performance.now() - start, type: ep.type };
+    } catch(e){ return null; }
+  });
+  const results = await Promise.all(promises);
+  const valid = results.filter(function(r){ return r !== null; });
+  if(valid.length === 0) throw new Error('All endpoints failed');
+  valid.sort(function(a,b){ return a.speed - b.speed; });
+  return valid[0].data;
+}
+
+async function track(){
+  const addr = document.getElementById('addr').value.trim();
+  const chain = document.getElementById('chain').value;
+  const trackFunders = document.getElementById('trackFunders').checked;
+  if(!addr){ status('Enter a wallet address', true); return; }
+  document.getElementById('trackBtn').disabled = true;
+  document.getElementById('resultArea').classList.remove('hidden');
+  setProgress(5);
+  status('Tracking ' + maxDepth + ' hop' + (maxDepth > 1 ? 's' : '') + (trackFunders ? ' + funders' : '') + '...');
+  globalData = { main: {address: addr, chain: chain, balance: 0, tx_count: 0}, network: [], funders: [], txs: [] };
+  try {
+    const networkMap = new Map();
+    const edges = [];
+    const mainData = await fetchFastest(chain, addr, 8000);
+    networkMap.set(addr, { address: addr, depth: 0, balance: mainData.balance, tx_count: mainData.tx_count, type: 'main' });
+    globalData.main.balance = mainData.balance;
+    globalData.main.tx_count = mainData.tx_count;
+    globalData.txs = mainData.txs;
+    const funderMap = new Map();
+    if(trackFunders){
+      status('Identifying funders...');
+      mainData.txs.forEach(function(tx){
+        if(tx.direction === 'in'){
+          tx.inputs.forEach(function(inp){
+            if(inp && inp !== addr){
+              const existing = funderMap.get(inp) || {address: inp, totalSent: 0, txCount: 0, firstTx: tx.time};
+              existing.totalSent += tx.amount;
+              existing.txCount += 1;
+              funderMap.set(inp, existing);
+              if(!networkMap.has(inp)){
+                networkMap.set(inp, {address: inp, depth: -1, balance: null, type: 'funder', parent: addr});
+              }
+              edges.push({source: inp, target: addr, direction: 'in', amount: tx.amount, isFunder: true});
+            }
+          });
+        }
+      });
+    }
+    globalData.funders = Array.from(funderMap.values()).sort(function(a,b){ return b.totalSent - a.totalSent; });
+    setProgress(15);
+    let currentLayer = [addr];
+    for(let depth = 1; depth <= maxDepth; depth++){
+      const nextLayer = [];
+      const layerAddrs = currentLayer.slice(0, depth === 1 ? 12 : 6);
+      status('Exploring hop ' + depth + '... (' + layerAddrs.length + ' wallets)');
+      for(let i = 0; i < layerAddrs.length; i++){
+        const parentAddr = layerAddrs[i];
+        try {
+          const existing = networkMap.get(parentAddr);
+          if(existing && existing.explored) continue;
+          let parentData;
+          if(parentAddr === addr){ parentData = mainData; }
+          else {
+            await sleep(depth === 1 ? 300 : 500);
+            parentData = await fetchFastest(chain, parentAddr, 6000);
+          }
+          if(existing) existing.explored = true;
+          parentData.txs.forEach(function(tx){
+            if(tx.direction === 'out'){
+              tx.outputs.forEach(function(out){
+                if(out !== parentAddr && out !== addr){
+                  edges.push({source: parentAddr, target: out, direction: 'out', amount: tx.amount, isFunder: false});
+                  if(!networkMap.has(out)){
+                    networkMap.set(out, {address: out, depth: depth, balance: null, type: 'sent', parent: parentAddr});
+                    nextLayer.push(out);
+                  }
+                }
+              });
+            }
+            if(depth < maxDepth){
+              tx.inputs.forEach(function(inp){
+                if(inp !== parentAddr && inp !== addr){
+                  edges.push({source: inp, target: parentAddr, direction: 'in', amount: tx.amount, isFunder: false});
+                  if(!networkMap.has(inp)){
+                    networkMap.set(inp, {address: inp, depth: depth, balance: null, type: 'received', parent: parentAddr});
+                    nextLayer.push(inp);
+                  }
+                }
+              });
+            }
+          });
+        } catch(e) { console.log('Skip', parentAddr); }
+        setProgress(15 + Math.round((depth * 20) + (i / layerAddrs.length) * 15));
+      }
+      currentLayer = nextLayer;
+      if(currentLayer.length === 0) break;
+    }
+    status('Fetching balances...');
+    const allNodes = Array.from(networkMap.values()).filter(function(n){ return n.depth !== 0; });
+    const batchSize = chain === 'sol' ? 4 : 6;
+    for(let i = 0; i < allNodes.length; i += batchSize){
+      const batch = allNodes.slice(i, i + batchSize);
+      await Promise.all(batch.map(async function(node){
+        try { node.balance = await quickBalance(chain, node.address); }
+        catch(e) { node.balance = '?.?????'; }
+      }));
+      setProgress(50 + Math.round((i / allNodes.length) * 50));
+      if(i + batchSize < allNodes.length) await sleep(100);
+    }
+    globalData.network = Array.from(networkMap.values());
+    globalData.edges = edges;
+    globalData.main.totalOut = mainData.txs.filter(function(t){ return t.direction === 'out'; }).reduce(function(a,t){ return a + t.amount; }, 0);
+    globalData.main.totalIn = mainData.txs.filter(function(t){ return t.direction === 'in'; }).reduce(function(a,t){ return a + t.amount; }, 0);
+    setProgress(100);
+    renderWallet();
+    hideStatus();
+  } catch(e) {
+    console.error(e);
+    status('Error: ' + e.message + '<br><small>Rate limits hit. Try 1 hop or wait.</small>', true);
+    setProgress(0);
+  }
+  document.getElementById('trackBtn').disabled = false;
+}
+
+async function fetchSolanaRPC(rpcUrl, addr, timeoutMs){
+  timeoutMs = timeoutMs || 6000;
+  const [balRes, sigRes] = await Promise.all([
+    fetch(rpcUrl, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({jsonrpc:'2.0',id:1,method:'getBalance',params:[addr]})}),
+    fetch(rpcUrl, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({jsonrpc:'2.0',id:2,method:'getSignaturesForAddress',params:[addr,{limit:25}]})})
+  ]);
+  const [balData, sigData] = await Promise.all([balRes.json(), sigRes.json()]);
+  const balance = (balData.result && balData.result.value ? balData.result.value : 0) / 1e9;
+  const signatures = sigData.result || [];
+  const txs = [];
+  for(let i = 0; i < signatures.length; i += 3){
+    const batch = signatures.slice(i, i + 3);
+    const batchTxs = await Promise.all(batch.map(function(sig){ return fetchSolanaTx(rpcUrl, sig.signature, addr); }));
+    txs.push.apply(txs, batchTxs.filter(function(t){ return t !== null; }));
+  }
+  return { balance: balance, tx_count: signatures.length, txs: txs };
+}
+
+async function fetchSolanaTx(rpcUrl, sig, addr){
+  try {
+    const res = await fetch(rpcUrl, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({jsonrpc:'2.0',id:1,method:'getTransaction',params:[sig,{encoding:'json',maxSupportedTransactionVersion:0}]})});
+    const data = await res.json();
+    const tx = data.result;
+    if(!tx) return null;
+    const meta = tx.meta || {};
+    const preBal = meta.preBalances || [];
+    const postBal = meta.postBalances || [];
+    const accKeys = tx.transaction && tx.transaction.message ? tx.transaction.message.accountKeys : [];
+    const ourIdx = accKeys.indexOf(addr);
+    let amount = 0, direction = 'in', outputs = [], inputs = [];
+    if(ourIdx >= 0){
+      const diff = (postBal[ourIdx] || 0) - (preBal[ourIdx] || 0);
+      amount = Math.abs(diff) / 1e9;
+      direction = diff < 0 ? 'out' : 'in';
+    }
+    accKeys.forEach(function(k){ if(k !== addr) { outputs.push(k); inputs.push(k); } });
+    return { hash: sig, direction: direction, amount: amount, time: tx.blockTime ? new Date(tx.blockTime * 1000).toISOString() : null, outputs: outputs, inputs: inputs };
+  } catch(e) { return null; }
+}
+
+function parseBlockcypher(data, addr, chain){
+  const div = DEC[chain];
+  const txs = (data.txrefs || data.txs || []).map(function(tx){
+    const inputs = tx.inputs ? tx.inputs.map(function(i){ return i.addresses ? i.addresses[0] : null; }).filter(Boolean) : [];
+    const outputs = tx.outputs ? tx.outputs.map(function(o){ return o.addresses ? o.addresses[0] : null; }).filter(Boolean) : [];
+    const weIn = inputs.indexOf(addr) >= 0;
+    const weOut = outputs.indexOf(addr) >= 0;
+    const direction = weIn && !weOut ? 'out' : 'in';
+    const amount = (tx.value || tx.total || 0) / div;
+    return { hash: tx.tx_hash || tx.hash, direction: direction, amount: amount, time: tx.confirmed || tx.received, outputs: outputs, inputs: inputs };
+  });
+  return { balance: (data.balance || data.final_balance || 0) / div, tx_count: data.n_tx || (data.txrefs ? data.txrefs.length : 0), txs: txs };
+}
+
+function parseBlockchainInfo(data, addr){
+  const txs = (data.txs || []).map(function(tx){
+    const inputs = tx.inputs ? tx.inputs.map(function(i){ return i.prev_out && i.prev_out.addr ? i.prev_out.addr : null; }).filter(Boolean) : [];
+    const outputs = tx.out ? tx.out.map(function(o){ return o.addr; }).filter(Boolean) : [];
+    const weIn = inputs.indexOf(addr) >= 0;
+    const weOut = outputs.indexOf(addr) >= 0;
+    const direction = weIn && !weOut ? 'out' : 'in';
+    let outVal = 0;
+    if(tx.out) { tx.out.forEach(function(o){ if(o.addr === addr) outVal = o.value; }); }
+    let inVal = 0;
+    if(tx.inputs) { tx.inputs.forEach(function(i){ if(i.prev_out && i.prev_out.addr === addr) inVal = i.prev_out.value; }); }
+    const amount = (direction === 'out' ? inVal : outVal) / 1e8;
+    return { hash: tx.hash, direction: direction, amount: amount, time: tx.time ? new Date(tx.time * 1000).toISOString() : null, outputs: outputs, inputs: inputs };
+  });
+  return { balance: (data.final_balance || 0) / 1e8, tx_count: data.n_tx || 0, txs: txs };
+}
+
+function parseEthplorer(data, addr){
+  const txs = (data.transfers || []).map(function(t){
+    return { hash: t.transactionHash, direction: t.from === addr ? 'out' : 'in', amount: (t.value || 0) / 1e18, time: t.timestamp ? new Date(t.timestamp * 1000).toISOString() : null, outputs: t.to ? [t.to] : [], inputs: t.from ? [t.from] : [] };
+  });
+  return { balance: (data.ETH && data.ETH.balance ? data.ETH.balance : 0), tx_count: txs.length, txs: txs };
+}
+
+function parseDogeChain(data, addr){ return { balance: (data.balance || 0) / 1e8, tx_count: 0, txs: [] }; }
+
+function parseBlockchair(data, addr){
+  const d = data.data && data.data[addr] ? data.data[addr] : null;
+  return { balance: (d && d.address && d.address.balance ? d.address.balance : 0) / 1e8, tx_count: d && d.address && d.address.transaction_count ? d.address.transaction_count : 0, txs: [] };
+}
+
+async function quickBalance(chain, addr){
+  try {
+    if(chain === 'sol'){
+      const res = await fetch('https://api.mainnet.solana.com', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({jsonrpc:'2.0',id:1,method:'getBalance',params:[addr]})});
+      const data = await res.json();
+      return ((data.result && data.result.value ? data.result.value : 0) / 1e9).toFixed(6);
+    } else {
+      for(let i = 0; i < ENDPOINTS[chain].length; i++){
+        const ep = ENDPOINTS[chain][i];
+        try {
+          if(ep.type === 'blockcypher'){ const data = await fetchWithTimeout(ep.url(addr), 4000); return ((data.balance || data.final_balance || 0) / DEC[chain]).toFixed(6); }
+          else if(ep.type === 'blockchaininfo'){ const data = await fetchWithTimeout(ep.url(addr), 4000); return ((data.final_balance || 0) / 1e8).toFixed(6); }
+          else if(ep.type === 'dogechain'){ const data = await fetchWithTimeout(ep.url(addr), 4000); return ((data.balance || 0) / 1e8).toFixed(6); }
+          else if(ep.type === 'blockchair'){ const data = await fetchWithTimeout(ep.url(addr), 4000); return ((data.data && data.data[addr] && data.data[addr].address && data.data[addr].address.balance ? data.data[addr].address.balance : 0) / 1e8).toFixed(6); }
+          else if(ep.type === 'ethplorer'){ const data = await fetchWithTimeout(ep.url(addr), 4000); return ((data.ETH && data.ETH.balance ? data.ETH.balance : 0)).toFixed(6); }
+        } catch(e) { continue; }
+      }
+      return '?.?????';
+    }
+  } catch(e) { return '?.?????'; }
+}
+// ============ BUBBLE MAP ============
+function drawBubbleMap(){
+  const svg = document.getElementById('bubbleMap');
+  const container = document.getElementById('mapContainer');
+  const W = container.clientWidth;
+  const H = container.clientHeight;
+  svg.setAttribute('width', W);
+  svg.setAttribute('height', H);
+  svg.innerHTML = '';
+  if(!globalData.main || globalData.network.length === 0) return;
+  const nodes = [];
+  const edges = globalData.edges || [];
+  const nodeMap = new Map();
+  const allAddresses = new Set(globalData.network.map(function(n){ return n.address; }));
+  if(caData.botWallets){
+    caData.botWallets.forEach(function(bot){
+      if(!allAddresses.has(bot.address)){
+        globalData.network.push({ address: bot.address, depth: -2, balance: null, type: bot.type, parent: caData.address });
+      }
+    });
+  }
+  globalData.network.forEach(function(node, idx){
+    const depth = node.depth;
+    let color, radius;
+    if(depth === -2) { color = NODE_COLORS[node.type] || NODE_COLORS.bot; radius = node.type === 'deployer' ? 24 : 18; }
+    else if(depth === -1) { color = NODE_COLORS.funder; radius = 20; }
+    else if(depth === 0) { color = NODE_COLORS.main; radius = 32; }
+    else if(depth === 1) { color = NODE_COLORS.l1; radius = 16; }
+    else if(depth === 2) { color = NODE_COLORS.l2; radius = 12; }
+    else { color = NODE_COLORS.l3; radius = 9; }
+    nodes.push({ id: node.address, label: truncate(node.address), depth: depth, type: node.type || 'main', x: 0, y: 0, r: radius, balance: node.balance, color: color, parent: node.parent });
+    nodeMap.set(node.address, idx);
+  });
+  const centerX = W / 2;
+  const centerY = H / 2;
+  const maxR = Math.min(W, H) * 0.4;
+  nodes[0].x = centerX; nodes[0].y = centerY;
+  const bots = nodes.filter(function(n){ return n.depth === -2; });
+  if(bots.length > 0){
+    const botAngleStep = Math.PI / (bots.length + 1);
+    bots.forEach(function(node, i){
+      const angle = Math.PI - ((i + 1) * botAngleStep) - 0.3;
+      node.x = centerX + Math.cos(angle) * maxR * 0.75;
+      node.y = centerY + Math.sin(angle) * maxR * 0.75;
+    });
+  }
+  const funders = nodes.filter(function(n){ return n.depth === -1; });
+  if(funders.length > 0){
+    const funderAngleStep = Math.PI / (funders.length + 1);
+    funders.forEach(function(node, i){
+      const angle = Math.PI + 0.3 - ((i + 1) * funderAngleStep * 0.6);
+      node.x = centerX + Math.cos(angle) * maxR * 0.65;
+      node.y = centerY + Math.sin(angle) * maxR * 0.65;
+    });
+  }
+  const depthGroups = {};
+  nodes.filter(function(n){ return n.depth > 0; }).forEach(function(n){ if(!depthGroups[n.depth]) depthGroups[n.depth] = []; depthGroups[n.depth].push(n); });
+  Object.keys(depthGroups).forEach(function(depth){
+    const group = depthGroups[depth];
+    const ringRadius = (maxR / maxDepth) * depth * 0.9;
+    const angleStep = Math.PI / (group.length + 1);
+    group.forEach(function(node, i){
+      let angle = ((i + 1) * angleStep) - Math.PI/2;
+      if(node.parent && nodeMap.has(node.parent)){
+        const parentIdx = nodeMap.get(node.parent);
+        const parent = nodes[parentIdx];
+        if(parent){ const parentAngle = Math.atan2(parent.y - centerY, parent.x - centerX); const childOffset = (i - group.length/2) * (angleStep / 3); angle = parentAngle + childOffset; }
+      }
+      node.x = centerX + Math.cos(angle) * ringRadius;
+      node.y = centerY + Math.sin(angle) * ringRadius;
+    });
+  });
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.setAttribute('transform', 'translate(' + mapState.panX + ',' + mapState.panY + ') scale(' + mapState.zoom + ')');
+  edges.forEach(function(edge){
+    const sIdx = nodeMap.get(edge.source); const tIdx = nodeMap.get(edge.target);
+    if(sIdx === undefined || tIdx === undefined) return;
+    const s = nodes[sIdx]; const t = nodes[tIdx];
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', s.x); line.setAttribute('y1', s.y); line.setAttribute('x2', t.x); line.setAttribute('y2', t.y);
+    if(edge.isFunder){
+      line.setAttribute('stroke', 'var(--funder)'); line.setAttribute('stroke-width', Math.max(1, Math.min(4, edge.amount / 0.5)));
+      line.setAttribute('stroke-opacity', '0.5'); line.setAttribute('stroke-dasharray', '0');
+      line.setAttribute('marker-end', 'url(#arrowFunder)');
+    } else {
+      line.setAttribute('stroke', edge.direction === 'out' ? 'var(--node-l1)' : 'var(--node-in)');
+      line.setAttribute('stroke-width', Math.max(0.5, Math.min(2.5, edge.amount / 0.5)));
+      line.setAttribute('stroke-opacity', '0.25'); line.setAttribute('stroke-dasharray', edge.direction === 'out' ? '0' : '3,3');
+    }
+    g.appendChild(line);
+  });
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+  marker.setAttribute('id', 'arrowFunder'); marker.setAttribute('markerWidth', '10'); marker.setAttribute('markerHeight', '10');
+  marker.setAttribute('refX', '9'); marker.setAttribute('refY', '3'); marker.setAttribute('orient', 'auto'); marker.setAttribute('markerUnits', 'strokeWidth');
+  const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  arrowPath.setAttribute('d', 'M0,0 L0,6 L9,3 z'); arrowPath.setAttribute('fill', 'var(--funder)');
+  marker.appendChild(arrowPath); defs.appendChild(marker); g.appendChild(defs);
+  nodes.forEach(function(node, i){
+    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g'); group.style.cursor = 'pointer';
+    if(node.depth <= 1 || node.depth === -1 || node.depth === -2){
+      const glow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      glow.setAttribute('cx', node.x); glow.setAttribute('cy', node.y); glow.setAttribute('r', node.r + (node.depth === 0 ? 10 : node.depth === -2 ? (node.type === 'deployer' ? 10 : 8) : 6));
+      glow.setAttribute('fill', node.color); glow.setAttribute('opacity', node.depth === 0 ? '0.2' : '0.12');
+      g.appendChild(glow);
+    }
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', node.x); circle.setAttribute('cy', node.y); circle.setAttribute('r', node.r); circle.setAttribute('fill', node.color);
+    circle.setAttribute('stroke', '#1f2937'); circle.setAttribute('stroke-width', node.depth === 0 || node.depth === -1 || node.depth === -2 ? '3' : '2');
+    g.appendChild(circle);
+    if(node.depth <= 2 || node.depth === -1 || node.depth === -2 || nodes.length < 35){
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', node.x); text.setAttribute('y', node.y + node.r + 12); text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('fill', 'var(--text)'); text.setAttribute('font-size', node.depth === 0 ? '11' : '9'); text.setAttribute('font-family', 'monospace');
+      text.textContent = node.label; g.appendChild(text);
+    }
+    if(node.depth === 0){
+      const badge = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      badge.setAttribute('x', node.x); badge.setAttribute('y', node.y + 4); badge.setAttribute('text-anchor', 'middle');
+      badge.setAttribute('fill', '#000'); badge.setAttribute('font-size', '10'); badge.setAttribute('font-weight', 'bold');
+      badge.textContent = 'MAIN'; g.appendChild(badge);
+    } else if(node.depth === -2){
+      const badge = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      badge.setAttribute('x', node.x); badge.setAttribute('y', node.y + 4); badge.setAttribute('text-anchor', 'middle');
+      badge.setAttribute('fill', '#000'); badge.setAttribute('font-size', node.type === 'deployer' ? '9' : '8'); badge.setAttribute('font-weight', 'bold');
+      badge.textContent = node.type === 'deployer' ? 'DEV' : 'BOT'; g.appendChild(badge);
+    } else if(node.depth === -1){
+      const badge = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      badge.setAttribute('x', node.x); badge.setAttribute('y', node.y + 4); badge.setAttribute('text-anchor', 'middle');
+      badge.setAttribute('fill', '#fff'); badge.setAttribute('font-size', '8'); badge.setAttribute('font-weight', 'bold');
+      badge.textContent = '$$'; g.appendChild(badge);
+    }
+    group.addEventListener('click', function(e) { e.stopPropagation(); showNodeTooltip(node, e); });
+    group.addEventListener('mouseenter', function() { circle.setAttribute('stroke', 'var(--accent)'); circle.setAttribute('stroke-width', '3'); });
+    group.addEventListener('mouseleave', function() { circle.setAttribute('stroke', '#1f2937'); circle.setAttribute('stroke-width', node.depth === 0 || node.depth === -1 || node.depth === -2 ? '3' : '2'); });
+    g.appendChild(group);
+  });
+  svg.appendChild(g);
+  document.getElementById('mapNodeCount').textContent = nodes.length;
+  document.getElementById('mapEdgeCount').textContent = edges.length;
+  document.getElementById('mapFunderCount').textContent = funders.length;
+  document.getElementById('mapBotCount').textContent = bots.length;
+}
+
+function showNodeTooltip(node, e){
+  const tooltip = document.getElementById('mapTooltip');
+  const container = document.getElementById('mapContainer');
+  const rect = container.getBoundingClientRect();
+  let depthLabel;
+  if(node.depth === -2) depthLabel = (node.type === 'deployer' ? '👨‍💻 DEPLOYER' : '🤖 BOT');
+ 
