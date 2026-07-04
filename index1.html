@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BUDE Wallet Tracker</title>
+<style>
+  :root{--bg:#0b0f19;--card:#111827;--accent:#00d4aa;--text:#e2e8f0;--muted:#94a3b8;--danger:#ef4444;--gold:#f59e0b;--sol:#9945ff;--warn:#f59e0b;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;padding:12px;min-height:100vh}
+  h1{text-align:center;font-size:1.4rem;margin-bottom:8px;color:var(--accent)}
+  .subtitle{text-align:center;color:var(--muted);font-size:0.85rem;margin-bottom:16px}
+  .card{background:var(--card);border:1px solid #1f2937;border-radius:12px;padding:14px;margin-bottom:12px}
+  label{display:block;color:var(--muted);font-size:0.8rem;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+  input,select,button{width:100%;padding:12px;border-radius:8px;border:1px solid #374151;background:#0b0f19;color:var(--text);font-size:1rem;margin-bottom:8px}
+  button{background:var(--accent);color:#000;font-weight:700;border:none;cursor:pointer;transition:opacity .2s}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  button:active{transform:scale(.98)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .stat{background:#0b0f19;border-radius:8px;padding:10px;text-align:center}
+  .stat-value{font-size:1.1rem;font-weight:700;color:var(--accent)}
+  .stat-label{font-size:.7rem;color:var(--muted);margin-top:2px}
+  .wallet-row{display:flex;align-items:center;justify-content:space-between;padding:10px;border-bottom:1px solid #1f2937;cursor:pointer}
+  .wallet-row:last-child{border-bottom:none}
+  .wallet-addr{font-family:monospace;font-size:.8rem;word-break:break-all;flex:1}
+  .wallet-tag{font-size:.65rem;padding:2px 8px;border-radius:4px;background:#1e3a5f;color:#60a5fa;margin-left:8px;white-space:nowrap}
+  .wallet-tag.main{background:#14532d;color:var(--accent)}
+  .wallet-tag.sol{background:#2e1065;color:#c4b5fd}
+  .wallet-balance{font-size:.85rem;font-weight:600;margin-left:8px;white-space:nowrap}
+  .tx-row{padding:8px;border-bottom:1px solid #1f2937;font-size:.8rem}
+  .tx-row:last-child{border-bottom:none}
+  .tx-hash{font-family:monospace;color:var(--accent);word-break:break-all}
+  .tx-dir{display:inline-block;padding:2px 6px;border-radius:4px;font-size:.7rem;font-weight:700;margin-right:6px}
+  .tx-in{background:#14532d;color:var(--accent)}
+  .tx-out{background:#450a0a;color:var(--danger)}
+  .tabs{display:flex;gap:4px;margin-bottom:12px}
+  .tab{flex:1;padding:10px;text-align:center;background:#0b0f19;border:1px solid #374151;border-radius:8px;cursor:pointer;font-size:.85rem}
+  .tab.active{background:var(--accent);color:#000;font-weight:700;border-color:var(--accent)}
+  .panel{display:none}
+  .panel.active{display:block}
+  .copy-btn{background:#1f2937;color:var(--text);font-size:.75rem;padding:4px 10px;border-radius:6px;border:1px solid #374151;cursor:pointer;margin-left:8px}
+  .copy-btn:active{background:#374151}
+  .loading{text-align:center;color:var(--muted);padding:20px;font-size:.9rem}
+  .error{color:var(--danger);text-align:center;padding:12px;font-size:.85rem}
+  .hidden{display:none}
+  .progress-bar{height:4px;background:#1f2937;border-radius:2px;overflow:hidden;margin:8px 0}
+  .progress-fill{height:100%;background:var(--accent);width:0%;transition:width .3s}
+  .speed-badge{font-size:.65rem;padding:2px 6px;border-radius:4px;background:#14532d;color:var(--accent);margin-left:6px}
+  .speed-badge.slow{background:#450a0a;color:var(--danger)}
+  @media(max-width:400px){.grid{grid-template-columns:1fr}.wallet-row{flex-direction:column;align-items:flex-start}.wallet-balance{margin-left:0;margin-top:4px}}
+</style>
+</head>
+<body>
+
+<h1>🔍 BUDE Wallet Tracker</h1>
+<p class="subtitle">Track a main wallet + all wallets it created (sent to)</p>
+
+<div class="card">
+  <label>Blockchain</label>
+  <select id="chain">
+    <option value="btc">Bitcoin (BTC)</option>
+    <option value="eth">Ethereum (ETH)</option>
+    <option value="sol">Solana (SOL) ⚡</option>
+    <option value="doge">Dogecoin (DOGE)</option>
+    <option value="ltc">Litecoin (LTC)</option>
+  </select>
+  <label>Main Wallet Address</label>
+  <input type="text" id="addr" placeholder="Enter wallet address..." autocomplete="off">
+  <button id="trackBtn" onclick="track()">🔎 Track Wallet</button>
+  <div class="progress-bar hidden" id="progBar"><div class="progress-fill" id="progFill"></div></div>
+</div>
+
+<div id="resultArea" class="hidden">
+  <div class="tabs">
+    <div class="tab active" onclick="showPanel('overview')">Overview</div>
+    <div class="tab" onclick="showPanel('derived')">Derived Wallets</div>
+    <div class="tab" onclick="showPanel('txs')">Transactions</div>
+  </div>
+
+  <div id="panel-overview" class="panel active">
+    <div class="card">
+      <div class="grid">
+        <div class="stat"><div class="stat-value" id="mainBal">—</div><div class="stat-label">Balance</div></div>
+        <div class="stat"><div class="stat-value" id="mainTx">—</div><div class="stat-label">Total TXs</div></div>
+        <div class="stat"><div class="stat-value" id="derivedCount">—</div><div class="stat-label">Derived Wallets</div></div>
+        <div class="stat"><div class="stat-value" id="totalOut">—</div><div class="stat-label">Total Sent</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <label>Main Wallet</label>
+      <div class="wallet-row" style="cursor:default">
+        <span class="wallet-addr" id="mainAddrDisplay"></span>
+        <span class="wallet-tag main">MAIN</span>
+        <button class="copy-btn" onclick="copyText(document.getElementById('mainAddrDisplay').textContent)">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-derived" class="panel">
+    <div class="card" id="derivedList">
+      <div class="loading">Click Track to discover derived wallets...</div>
+    </div>
+  </div>
+
+  <div id="panel-txs" class="panel">
+    <div class="card" id="txList">
+      <div class="loading">Transactions will appear here...</div>
+    </div>
+  </div>
+</div>
+
+<div id="status" class="hidden"></div>
+
+<script>
+// ============ SPEED OPTIMIZED: MULTIPLE ENDPOINTS PER CHAIN ============
+const ENDPOINTS = {
+  btc: [
+    { url: addr => `https://api.blockcypher.com/v1/btc/main/addrs/${addr}/full?limit=50`, type: 'blockcypher', weight: 1 },
+    { url: addr => `https://blockchain.info/rawaddr/${addr}?limit=50`, type: 'blockchaininfo', weight: 2 }
+  ],
+  eth: [
+    { url: addr => `https://api.blockcypher.com/v1/eth/main/addrs/${addr}/full?limit=50`, type: 'blockcypher', weight: 1 },
+    { url: addr => `https://api.ethplorer.io/getAddressInfo/${addr}?apiKey=free`, type: 'ethplorer', weight: 2 }
+  ],
+  sol: [
+    { url: () => 'https://api.mainnet.solana.com', type: 'solana', weight: 1 },
+    { url: () => 'https://solana-api.projectserum.com', type: 'solana', weight: 2 },
+    { url: () => 'https://rpc.ankr.com/solana', type: 'solana', weight: 3 }
+  ],
+  doge: [
+    { url: addr => `https://api.blockcypher.com/v1/doge/main/addrs/${addr}/full?limit=50`, type: 'blockcypher', weight: 1 },
+    { url: addr => `https://dogechain.info/api/v1/address/balance/${addr}`, type: 'dogechain', weight: 2 }
+  ],
+  ltc: [
+    { url: addr => `https://api.blockcypher.com/v1/ltc/main/addrs/${addr}/full?limit=50`, type: 'blockcypher', weight: 1 },
+    { url: addr => `https://api.blockchair.com/litecoin/dashboards/address/${addr}?limit=50`, type: 'blockchair', weight: 2 }
+  ]
+};
+
+const SYM = {btc:'BTC',eth:'ETH',sol:'SOL',doge:'DOGE',ltc:'LTC'};
+const DEC = {btc:1e8,eth:1e18,sol:1e9,doge:1e8,ltc:1e8};
+
+let globalData = { main: null, derived: [], txs: [] };
+
+function showPanel(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+id).classList.add('active');
+}
+
+function status(msg, isError=false){
+  const el = document.getElementById('status');
+  el.classList.remove('hidden');
+  el.innerHTML = `<div class="${isError?'error':'loading'}">${msg}</div>`;
+}
+
+function hideStatus(){ document.getElementById('status').classList.add('hidden'); }
+
+function setProgress(pct){
+  const bar = document.getElementById('progBar');
+  const fill = document.getElementById('progFill');
+  bar.classList.remove('hidden');
+  fill.style.width = pct + '%';
+  if(pct >= 100) setTimeout(()=>bar.classList.add('hidden'), 500);
+}
+
+// ============ RACE MULTIPLE ENDPOINTS — FASTEST WINS ============
+async function fetchFastest(chain, addr, timeoutMs=6000){
+  const endpoints = ENDPOINTS[chain];
+  const promises = endpoints.map(async ep => {
+    try {
+      const start = performance.now();
+      let data;
+      if(ep.type === 'solana'){
+        data = await fetchSolanaRPC(ep.url(), addr, timeoutMs);
+      } else {
+        const res = await fetchWithTimeout(ep.url(addr), timeoutMs);
+        data = ep.type === 'blockchaininfo' ? parseBlockchainInfo(res, addr) :
+               ep.type === 'ethplorer' ? parseEthplorer(res, addr) :
+               ep.type === 'dogechain' ? parseDogeChain(res, addr) :
+               ep.type === 'blockchair' ? parseBlockchair(res, addr) :
+               parseBlockcypher(res, addr, chain);
+      }
+      return { data, speed: performance.now() - start, type: ep.type };
+    } catch(e){ return null; }
+  });
+  
+  const results = await Promise.all(promises);
+  const valid = results.filter(r => r !== null);
+  if(valid.length === 0) throw new Error('All endpoints failed');
+  
+  valid.sort((a,b) => a.speed - b.speed);
+  console.log(`Fastest: ${valid[0].type} (${valid[0].speed.toFixed(0)}ms)`);
+  return valid[0].data;
+}
+
+// ============ MAIN TRACK (PARALLEL EVERYWHERE) ============
+async function track(){
+  const addr = document.getElementById('addr').value.trim();
+  const chain = document.getElementById('chain').value;
+  if(!addr){ status('Enter a wallet address', true); return; }
+  
+  document.getElementById('trackBtn').disabled = true;
+  document.getElementById('resultArea').classList.remove('hidden');
+  setProgress(10);
+  status('Fetching main wallet... <span class="speed-badge">FAST</span>');
+  
+  globalData = { main: {address: addr, chain: chain, balance: 0, tx_count: 0}, derived: [], txs: [] };
+  
+  try {
+    // Race endpoints for main wallet
+    let parsed = await fetchFastest(chain, addr, 8000);
+    setProgress(30);
+    
+    globalData.main.balance = parsed.balance;
+    globalData.main.tx_count = parsed.tx_count;
+    globalData.txs = parsed.txs;
+    
+    // Extract derived wallets
+    const sentTo = new Set();
+    let totalOut = 0;
+    parsed.txs.forEach(tx => {
+      if(tx.direction === 'out'){
+        totalOut += tx.amount;
+        tx.outputs.forEach(out => { if(out !== addr) sentTo.add(out); });
+      }
+    });
+    
+    setProgress(40);
+    status(`Found ${sentTo.size} derived wallets. Fetching balances...`);
+    
+    // PARALLEL BATCH: fetch derived balances in groups
+    const derivedAddrs = Array.from(sentTo).slice(0, 20);
+    globalData.derived = await fetchDerivedBalancesParallel(chain, derivedAddrs);
+    
+    globalData.main.totalOut = totalOut;
+    setProgress(100);
+    render();
+    hideStatus();
+  } catch(e) {
+    console.error(e);
+    status('Error: ' + e.message + '<br><small>All endpoints failed. Try again shortly.</small>', true);
+    setProgress(0);
+  }
+  document.getElementById('trackBtn').disabled = false;
+}
+
+// ============ PARALLEL BATCH FETCHING (5 at a time) ============
+async function fetchDerivedBalancesParallel(chain, addresses){
+  if(addresses.length === 0) return [];
+  
+  const batchSize = chain === 'sol' ? 3 : 5;
+  const results = [];
+  
+  for(let i=0; i<addresses.length; i+=batchSize){
+    const batch = addresses.slice(i, i+batchSize);
+    const batchPromises = batch.map(async addr => {
+      try {
+        const bal = await quickBalance(chain, addr);
+        return { address: addr, balance: bal, tag: 'Derived' };
+      } catch(e) {
+        return { address: addr, balance: '?.?????', tag: 'Derived' };
+      }
+    });
+    
+    const batchResults = await Promise.all(batchPromises);
+    results.push(...batchResults);
+    
+    setProgress(40 + Math.round((results.length / addresses.length) * 60));
+    if(i + batchSize < addresses.length) await sleep(200);
+  }
+  
+  return results;
+}
+
+// ============ SOLANA: PARALLEL BALANCE + SIGNATURES ============
+async function fetchSolanaRPC(rpcUrl, addr, timeoutMs=6000){
+  const [balRes, sigRes] = await Promise.all([
+    fetch(rpcUrl, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({jsonrpc:'2.0',id:1,method:'getBalance',params:[addr]})
+    }),
+    fetch(rpcUrl, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({jsonrpc:'2.0',id:2,method:'getSignaturesForAddress',params:[addr,{limit:30}]})
+    })
+  ]);
+  
+  const [balData, sigData] = await Promise.all([balRes.json(), sigRes.json()]);
+  const balance = (balData.result?.value || 0) / 1e9;
+  const signatures = sigData.result || [];
+  
+  // Batch fetch transactions (3 at a time)
+  const txs = [];
+  for(let i=0; i<signatures.length; i+=3){
+    const batch = signatures.slice(i, i+3);
+    const batchTxs = await Promise.all(
+      batch.map(sig => fetchSolanaTx(rpcUrl, sig.signature, addr))
+    );
+    txs.push(...batchTxs.filter(t => t !== null));
+  }
+  
+  return { balance: balance, tx_count: signatures.length, txs: txs };
+}
+
+async function fetchSolanaTx(rpcUrl, sig, addr){
+  try {
+    const res = await fetch(rpcUrl, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        jsonrpc:'2.0',id:1,
+        method:'getTransaction',
+        params:[sig,{encoding:'json',maxSupportedTransactionVersion:0}]
+      })
+    });
+    const data = await res.json();
+    const tx = data.result;
+    if(!tx) return null;
+    
+    const meta = tx.meta || {};
+    const preBal = meta.preBalances || [];
+    const postBal = meta.postBalances || [];
+    const accKeys = tx.transaction?.message?.accountKeys || [];
+    const ourIdx = accKeys.indexOf(addr);
+    
+    let amount = 0, direction = 'in', outputs = [];
+    
+    if(ourIdx >= 0){
+      const diff = (postBal[ourIdx] || 0) - (preBal[ourIdx] || 0);
+      amount = Math.abs(diff) / 1e9;
+      direction = diff < 0 ? 'out' : 'in';
+    }
+    
+    accKeys.forEach((k, i) => { if(k !== addr) outputs.push(k); });
+    
+    return {
+      hash: sig,
+      direction: direction,
+      amount: amount,
+      time: tx.blockTime ? new Date(tx.blockTime * 1000).toISOString() : null,
+      outputs: outputs,
+      inputs: [addr]
+    };
+  } catch(e) { return null; }
+}
+
+// ============ PARSERS ============
+function parseBlockcypher(data, addr, chain){
+  const div = DEC[chain];
+  const txs = (data.txrefs || data.txs || []).map(tx => {
+    const inputs = tx.inputs?.map(i=>i.addresses?.[0]).filter(Boolean) || [];
+    const outputs = tx.outputs?.map(o=>o.addresses?.[0]).filter(Boolean) || [];
+    const weIn = inputs.includes(addr);
+    const weOut = outputs.includes(addr);
+    const direction = weIn && !weOut ? 'out' : 'in';
+    const amount = (tx.value || tx.total || 0) / div;
+    return { hash: tx.tx_hash || tx.hash, direction, amount, time: tx.confirmed || tx.received, outputs, inputs };
+  });
+  return { balance: (data.balance || data.final_balance || 0) / div, tx_count: data.n_tx || data.txrefs?.length || 0, txs };
+}
+
+function parseBlockchainInfo(data, addr){
+  const txs = (data.txs || []).map(tx => {
+    const inputs = tx.inputs?.map(i=>i.prev_out?.addr).filter(Boolean) || [];
+    const outputs = tx.out?.map(o=>o.addr).filter(Boolean) || [];
+    const weIn = inputs.includes(addr);
+    const weOut = outputs.includes(addr);
+    const direction = weIn && !weOut ? 'out' : 'in';
+    const outVal = tx.out?.find(o => o.addr === addr)?.value || 0;
+    const inVal = tx.inputs?.find(i=>i.prev_out?.addr===addr)?.prev_out?.value || 0;
+    const amount = (direction === 'out' ? inVal : outVal) / 1e8;
+    return { hash: tx.hash, direction, amount, time: tx.time ? new Date(tx.time*1000).toISOString() : null, outputs, inputs };
+  });
+  return { balance: (data.final_balance || 0) / 1e8, tx_count: data.n_tx || 0, txs };
+}
+
+function parseEthplorer(data, addr){
+  const txs = (data.transfers || []).map(t => ({
+    hash: t.transactionHash,
+    direction: t.from === addr ? 'out' : 'in',
+    amount: (t.value || 0) / 1e18,
+    time: t.timestamp ? new Date(t.timestamp*1000).toISOString() : null,
+    outputs: t.to ? [t.to] : [],
+    inputs: t.from ? [t.from] : []
+  }));
+  return { balance: (data.ETH?.balance || 0), tx_count: txs.length, txs };
+}
+
+function parseDogeChain(data, addr){
+  return { balance: (data.balance || 0) / 1e8, tx_count: 0, txs: [] };
+}
+
+function parseBlockchair(data, addr){
+  const d = data.data?.[addr];
+  return { balance: (d?.address?.balance || 0) / 1e8, tx_count: d?.address?.transaction_count || 0, txs: [] };
+}
+
+// ============ UTILS ============
+async function fetchWithTimeout(url, ms){
+  const ctrl = new AbortController();
+  const t = setTimeout(()=>ctrl.abort(), ms);
+  const res = await fetch(url, {signal: ctrl.signal});
+  clearTimeout(t);
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  return res.json();
+}
+
+async function quickBalance(chain, addr){
+  try {
+    if(chain === 'sol'){
+      const res = await fetch('https://api.mainnet.solana.com', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({jsonrpc:'2.0',id:1,method:'getBalance',params:[addr]})
+      });
+      const data = await res.json();
+      return ((data.result?.value || 0) / 1e9).toFixed(6);
+    } else {
+      for(const ep of ENDPOINTS[chain]){
+        try {
+          if(ep.type === 'blockcypher'){
+            const data = await fetchWithTimeout(ep.url(addr), 4000);
+            return ((data.balance || data.final_balance || 0) / DEC[chain]).toFixed(6);
+          } else if(ep.type === 'blockchaininfo'){
+            const data = await fetchWithTimeout(ep.url(addr), 4000);
+            return ((data.final_balance || 0) / 1e8).toFixed(6);
+          } else if(ep.type === 'dogechain'){
+            const data = await fetchWithTimeout(ep.url(addr), 4000);
+            return ((data.balance || 0) / 1e8).toFixed(6);
+          } else if(ep.type === 'blockchair'){
+            const data = await fetchWithTimeout(ep.url(addr), 4000);
+            return ((data.data?.[addr]?.address?.balance || 0) / 1e8).toFixed(6);
+          }
+        } catch(e) { continue; }
+      }
+      return '?.?????';
+    }
+  } catch(e) { return '?.?????'; }
+}
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+// ============ RENDER ============
+function render(){
+  const m = globalData.main;
+  const chain = document.getElementById('chain').value;
+  const sym = SYM[chain];
+  
+  document.getElementById('mainBal').textContent = (typeof m.balance==='number'?m.balance.toFixed(6):m.balance) + ' ' + sym;
+  document.getElementById('mainTx').textContent = m.tx_count;
+  document.getElementById('derivedCount').textContent = globalData.derived.length;
+  document.getElementById('totalOut').textContent = (typeof m.totalOut==='number'?m.totalOut.toFixed(6):'?.?????') + ' ' + sym;
+  document.getElementById('mainAddrDisplay').textContent = m.address;
+  
+  const dList = document.getElementById('derivedList');
+  if(globalData.derived.length === 0){
+    dList.innerHTML = '<div class="loading">No derived wallets found.<br><small>This wallet hasn\'t sent funds to any new addresses yet.</small></div>';
+  } else {
+    dList.innerHTML = globalData.derived.map((w,i) => `
+      <div class="wallet-row" onclick="document.getElementById('addr').value='${w.address}';window.scrollTo(0,0)">
+        <span class="wallet-addr">${w.address}</span>
+        <span class="wallet-tag ${chain==='sol'?'sol':''}">${chain==='sol'?'SOL':'Derived'} #${i+1}</span>
+        <span class="wallet-balance">${w.balance} ${sym}</span>
+        <button class="copy-btn" onclick="event.stopPropagation();copyText('${w.address}')">Copy</button>
+      </div>
+    `).join('');
+  }
+  
+  const tList = document.getElementById('txList');
+  if(globalData.txs.length === 0){
+    tList.innerHTML = '<div class="loading">No transactions found.</div>';
+  } else {
+    tList.innerHTML = globalData.txs.slice(0, 50).map(tx => `
+      <div class="tx-row">
+        <span class="tx-dir ${tx.direction==='in'?'tx-in':'tx-out'}">${tx.direction==='in'?'IN':'OUT'}</span>
+        <span class="tx-hash">${tx.hash}</span>
+        <div style="margin-top:4px;color:var(--muted)">
+          ${tx.amount.toFixed(6)} ${sym} · ${tx.time ? new Date(tx.time).toLocaleString() : 'Pending'}
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+function copyText(text){
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = event.target;
+    const old = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(()=>btn.textContent=old, 1200);
+  });
+}
+</script>
+</body>
+</html>
