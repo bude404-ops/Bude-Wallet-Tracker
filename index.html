@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Board Pro</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: #fff; padding: 15px; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2c2c2c; color: white; border: 1px solid #555; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-green { background: #00e676; }
+        .btn-gray { background: #444; color: white; }
+        .char-card { background: #1e1e1e; padding: 10px; margin: 10px 0; border-left: 5px solid #2979ff; border-radius: 4px; display: flex; align-items: center; }
+        .char-img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; margin-right: 15px; background: #333; }
+    </style>
+</head>
+<body>
+    <h2>👥 Story Board Pro</h2>
+    
+    <input type="text" id="name" placeholder="Character Name">
+    <input type="text" id="role" placeholder="Role">
+    <input type="text" id="skills" placeholder="Skills">
+    <input type="text" id="imgUrl" placeholder="Image URL">
+    <textarea id="backstory" placeholder="Backstory / Personality"></textarea>
+    
+    <button class="btn-green" onclick="saveChar()">SAVE CHARACTER</button>
+    <button class="btn-gray" onclick="exportData()">DOWNLOAD DATABASE</button>
+
+    <h3>Your Cast (<span id="count">0</span>)</h3>
+    <div id="charList"></div>
+
+    <script>
+        let chars = JSON.parse(localStorage.getItem('story_chars') || '[]');
+
+        function saveChar() {
+            const newChar = {
+                name: document.getElementById('name').value,
+                role: document.getElementById('role').value,
+                skills: document.getElementById('skills').value,
+                imgUrl: document.getElementById('imgUrl').value,
+                backstory: document.getElementById('backstory').value
+            };
+            chars.push(newChar);
+            localStorage.setItem('story_chars', JSON.stringify(chars));
+            render();
+            document.querySelectorAll('input, textarea').forEach(i => i.value = '');
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(chars));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "my_cast.json");
+            dlAnchorElem.click();
+        }
+
+        function render() {
+            document.getElementById('count').innerText = chars.length;
+            document.getElementById('charList').innerHTML = chars.map(c => `
+                <div class="char-card">
+                    ${c.imgUrl ? `<img src="${c.imgUrl}" class="char-img">` : ''}
+                    <div>
+                        <strong>${c.name}</strong> - <em>${c.role}</em><br>
+                        <small>Skills: ${c.skills}</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+        render();
+    </script>
+</body>
+</html>
