@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Story Board App</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0f0f1a;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    color: #00d4ff;
+    margin-bottom: 5px;
+    font-size: 2rem;
+  }
+  .subtitle {
+    text-align: center;
+    color: #888;
+    margin-bottom: 25px;
+    font-size: 0.9rem;
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 10px 20px;
+    background: #1a1a2e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #aaa;
+    transition: all 0.3s;
+  }
+  .tab.active {
+    background: #00d4ff;
+    color: #0f0f1a;
+    border-color: #00d4ff;
+    font-weight: bold;
+  }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Character Section */
+  .char-form {
+    background: #1a1a2e;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #333;
+  }
+  .form-group {
+    margin-bottom: 15px;
+  }
+  label {
+    display: block;
+    margin-bottom: 5px;
+    color: #00d4ff;
+    font-size: 0.9rem;
+  }
+  input, textarea, select {
+    width: 100%;
+    padding: 10px;
+    background: #0f0f1a;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #e0e0e0;
+    font-size: 1rem;
+  }
+  textarea { min-height: 80px; resize: vertical; }
+  .img-preview {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #00d4ff;
+    margin-top: 10px;
+    display: none;
+  }
+  .btn {
+    padding: 12px 24px;
+    background: #00d4ff;
+    color: #0f0f1a;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: transform 0.2s;
+  }
+  .btn:hover { transform: scale(1.05); }
+  .btn-danger {
+    background: #ff4444;
+    color: white;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  .btn-secondary {
+    background: #333;
+    color: #e0e0e0;
+  }
+
+  .char-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+  }
+  .char-card {
+    background: #1a1a2e;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 15px;
+    position: relative;
+  }
+  .char-card img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #00d4ff;
+    margin-bottom: 10px;
+  }
+  .char-card h3 {
+    color: #00d4ff;
+    margin-bottom: 5px;
+  }
+  .char-card p {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-bottom: 3px;
+  }
+  .char-card .role-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    background: #00d4ff22;
+    color: #00d4ff;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin-bottom: 8px;
+  }
+  .char-count {
+    text-align: center;
+    color: #888;
+    margin-bottom: 15px;
+  }
+
+  /* Story Generator */
+  .story-panel {
+    background: #1a1a2e;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #333;
+  }
+  .char-select {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  .char-chip {
+    padding: 8px 15px;
+    background: #0f0f1a;
+    border: 1px solid #333;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+  .char-chip.selected {
+    background: #00d4ff;
+    color: #0f0f1a;
+    border-color: #00d4ff;
+  }
+  .char-chip img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 5px;
+  }
+  .story-output {
+    background: #0f0f1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    min-height: 300px;
+    white-space: pre-wrap;
+    line-height: 1.8;
+    font-family: 'Georgia', serif;
+    font-size: 1.05rem;
+  }
+  .scene-header {
+    color: #00d4ff;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+  }
+  .dialogue {
+    margin-left: 20px;
+    margin-bottom: 8px;
+    padding-left: 15px;
+    border-left: 3px solid #00d4ff44;
+  }
+  .dialogue .speaker {
+    color: #00d4ff;
+    font-weight: bold;
+  }
+  .action {
+    color: #888;
+    font-style: italic;
+    margin: 10px 0;
+  }
+
+  .export-btns {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #555;
+  }
+  .empty-state svg {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 15px;
+    opacity: 0.3;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #0f0f1a; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+  @media (max-width: 600px) {
+    .char-grid { grid-template-columns: 1fr; }
+    h1 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🎬 Story Board App</h1>
+  <p class="subtitle">Build characters. Generate scripts. Tell stories.</p>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('characters')">👥 Characters</div>
+    <div class="tab" onclick="switchTab('generator')">✍️ Story Generator</div>
+  </div>
+
+  <!-- CHARACTERS PANEL -->
+  <div id="characters" class="panel active">
+    <div class="char-form">
+      <h3 style="color:#00d4ff;margin-bottom:15px;">Add New Character</h3>
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="charName" placeholder="e.g. Detective Miller">
+      </div>
+      <div class="form-group">
+        <label>Role / Archetype</label>
+        <select id="charRole">
+          <option value="Protagonist">Protagonist (Hero)</option>
+          <option value="Antagonist">Antagonist (Villain)</option>
+          <option value="Sidekick">Sidekick</option>
+          <option value="Mentor">Mentor</option>
+          <option value="Love Interest">Love Interest</option>
+          <option value="Comic Relief">Comic Relief</option>
+          <option value="Anti-Hero">Anti-Hero</option>
+          <option value="Supporting">Supporting Character</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Personality / Traits</label>
+        <textarea id="charPersonality" placeholder="e.g. Gruff, cynical, secretly compassionate, drinks too much coffee..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Background / Backstory</label>
+        <textarea id="charBackground" placeholder="e.g. Former military, lost partner in case gone wrong..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Speech Pattern / Quirks</label>
+        <textarea id="charSpeech" placeholder="e.g. Speaks in short sentences, uses military slang, rarely smiles..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Character Image</label>
+        <input type="file" id="charImage" accept="image/*" onchange="previewImage(this)">
+        <img id="imgPreview" class="img-preview">
+      </div>
+      <button class="btn" onclick="addCharacter()">➕ Add Character</button>
+    </div>
+
+    <div class="char-count" id="charCount">0 / 100 characters</div>
+    <div class="char-grid" id="charGrid"></div>
+  </div>
+
+  <!-- STORY GENERATOR PANEL -->
+  <div id="generator" class="panel">
+    <div class="story-panel">
+      <h3 style="color:#00d4ff;margin-bottom:15px;">1. Select Characters for Your Story</h3>
+      <div class="char-select" id="charSelect"></div>
+
+      <h3 style="color:#00d4ff;margin-bottom:15px;">2. Story Prompt</h3>
+      <div class="form-group">
+        <textarea id="storyPrompt" rows="4" placeholder="e.g. A noir detective story where the protagonist discovers their partner betrayed them. Set in a rainy cyberpunk city. Include a tense confrontation and a surprise twist."></textarea>
+      </div>
+
+      <h3 style="color:#00d4ff;margin-bottom:15px;">3. Story Settings</h3>
+      <div class="form-group">
+        <label>Genre</label>
+        <select id="genre">
+          <option value="noir">Film Noir / Detective</option>
+          <option value="scifi">Sci-Fi / Cyberpunk</option>
+          <option value="fantasy">Fantasy / Medieval</option>
+          <option value="horror">Horror / Thriller</option>
+          <option value="romance">Romance / Drama</option>
+          <option value="comedy">Comedy</option>
+          <option value="action">Action / Adventure</option>
+          <option value="western">Western</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tone</label>
+        <select id="tone">
+          <option value="dark">Dark / Gritty</option>
+          <option value="light">Light / Uplifting</option>
+          <option value="suspenseful">Suspenseful / Tense</option>
+          <option value="humorous">Humorous / Witty</option>
+          <option value="melancholic">Melancholic / Reflective</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Number of Scenes</label>
+        <select id="sceneCount">
+          <option value="3">3 Scenes</option>
+          <option value="5" selected>5 Scenes</option>
+          <option value="7">7 Scenes</option>
+          <option value="10">10 Scenes</option>
+        </select>
+      </div>
+
+      <button class="btn" onclick="generateStory()" style="margin-top:10px;">🎬 Generate Script</button>
+
+      <div id="storyOutputContainer" style="display:none;">
+        <div class="story-output" id="storyOutput"></div>
+        <div class="export-btns">
+          <button class="btn btn-secondary" onclick="copyStory()">📋 Copy to Clipboard</button>
+          <button class="btn btn-secondary" onclick="downloadStory()">💾 Download .txt</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA STORAGE =====
+let characters = JSON.parse(localStorage.getItem('storyboard_chars')) || [];
+let selectedChars = new Set();
+
+function saveChars() {
+  localStorage.setItem('storyboard_chars', JSON.stringify(characters));
+  updateUI();
+}
+
+// ===== TAB SWITCHING =====
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.tab:nth-child(${tab === 'characters' ? 1 : 2})`).classList.add('active');
+  document.getElementById(tab).classList.add('active');
+  if (tab === 'generator') renderCharSelect();
+}
+
+// ===== IMAGE PREVIEW =====
+function previewImage(input) {
+  const preview = document.getElementById('imgPreview');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+// ===== ADD CHARACTER =====
+function addCharacter() {
+  if (characters.length >= 100) {
+    alert('Maximum 100 characters reached!');
+    return;
+  }
+  const name = document.getElementById('charName').value.trim();
+  const role = document.getElementById('charRole').value;
+  const personality = document.getElementById('charPersonality').value.trim();
+  const background = document.getElementById('charBackground').value.trim();
+  const speech = document.getElementById('charSpeech').value.trim();
+  const imgPreview = document.getElementById('imgPreview');
+
+  if (!name) { alert('Please enter a character name'); return; }
+
+  const char = {
+    id: Date.now(),
+    name, role, personality, background, speech,
+    image: imgPreview.style.display !== 'none' ? imgPreview.src : null
+  };
+
+  characters.push(char);
+  saveChars();
+
+  // Clear form
+  document.getElementById('charName').value = '';
+  document.getElementById('charPersonality').value = '';
+  document.getElementById('charBackground').value = '';
+  document.getElementById('charSpeech').value = '';
+  document.getElementById('charImage').value = '';
+  document.getElementById('imgPreview').style.display = 'none';
+}
+
+// ===== DELETE CHARACTER =====
+function deleteChar(id) {
+  characters = characters.filter(c => c.id !== id);
+  selectedChars.delete(id);
+  saveChars();
+}
+
+// ===== RENDER CHARACTER GRID =====
+function renderCharGrid() {
+  const grid = document.getElementById('charGrid');
+  document.getElementById('charCount').textContent = `${characters.length} / 100 characters`;
+
+  if (characters.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <p>No characters yet. Add your first character above!</p>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = characters.map(c => `
+    <div class="char-card">
+      ${c.image ? `<img src="${c.image}" alt="${c.name}">` : `<div style="width:80px;height:80px;border-radius:50%;background:#333;display:flex;align-items:center;justify-content:center;margin-bottom:10px;border:2px solid #00d4ff;">👤</div>`}
+      <h3>${c.name}</h3>
+      <span class="role-badge">${c.role}</span>
+      <p><strong style="color:#888;">Personality:</strong> ${c.personality || 'N/A'}</p>
+      <p><strong style="color:#888;">Background:</strong> ${c.background || 'N/A'}</p>
+      <p><strong style="color:#888;">Speech:</strong> ${c.speech || 'N/A'}</p>
+      <button class="btn btn-danger" onclick="deleteChar(${c.id})" style="margin-top:10px;">🗑️ Delete</button>
+    </div>
+  `).join('');
+}
+
+// ===== RENDER CHARACTER SELECT (for story gen) =====
+function renderCharSelect() {
+  const container = document.getElementById('charSelect');
+  if (characters.length === 0) {
+    container.innerHTML = '<p style="color:#555;">Add characters in the Characters tab first!</p>';
+    return;
+  }
+  container.innerHTML = characters.map(c => `
+    <div class="char-chip ${selectedChars.has(c.id) ? 'selected' : ''}" onclick="toggleChar(${c.id})">
+      ${c.image ? `<img src="${c.image}">` : ''}
+      ${c.name}
+    </div>
+  `).join('');
+}
+
+function toggleChar(id) {
+  if (selectedChars.has(id)) selectedChars.delete(id);
+  else selectedChars.add(id);
+  renderCharSelect();
+}
+
+// ===== STORY GENERATOR ENGINE =====
+function generateStory() {
+  const prompt = document.getElementById('storyPrompt').value.trim();
+  const genre = document.getElementById('genre').value;
+  const tone = document.getElementById('tone').value;
+  const sceneCount = parseInt(document.getElementById('sceneCount').value);
+
+  if (selectedChars.size === 0) { alert('Select at least one character!'); return; }
+  if (!prompt) { alert('Enter a story prompt!'); return; }
+
+  const chars = characters.filter(c => selectedChars.has(c.id));
+  const story = buildScript(chars, prompt, genre, tone, sceneCount);
+
+  document.getElementById('storyOutput').innerHTML = story;
+  document.getElementById('storyOutputContainer').style.display = 'block';
+}
+
+function buildScript(chars, prompt, genre, tone, sceneCount) {
+  const genreSettings = {
+    noir: { setting: 'rain-slicked streets, neon reflections, shadowy alleys', mood: 'cynical, world-weary', time: 'night' },
+    scifi: { setting: 'gleaming megacity, space station, dystopian underworld', mood: 'technological, existential', time: 'future' },
+    fantasy: { setting: 'ancient castle, enchanted forest, bustling tavern', mood: 'epic, mystical', time: 'medieval' },
+    horror: { setting: 'abandoned asylum, foggy woods, creaking mansion', mood: 'dread, paranoia', time: 'midnight' },
+    romance: { setting: 'cozy café, moonlit garden, bustling train station', mood: 'yearning, tender', time: 'evening' },
+    comedy: { setting: 'wacky office, chaotic household, absurd situation', mood: 'irreverent, playful', time: 'day' },
+    action: { setting: 'rooftop chase, speeding train, war-torn city', mood: 'adrenaline, determination', time: 'dusk' },
+    western: { setting: 'dusty saloon, frontier town, open prairie', mood: 'gritty, honor-bound', time: 'high noon' }
+  };
+
+  const toneAdj = {
+    dark: 'bleak, unforgiving', light: 'hopeful, warm', suspenseful: 'nerve-wracking, unpredictable',
+    humorous: 'witty, absurd', melancholic: 'wistful, bittersweet'
+  };
+
+  const gs = genreSettings[genre];
+  const ta = toneAdj[tone];
+
+  // Build character profiles for the script
+  const charProfiles = chars.map(c => {
+    const traits = [c.role, c.personality, c.background].filter(Boolean).join('. ');
+    return { ...c, fullProfile: traits };
+  });
+
+  let script = `<div style="text-align:center;margin-bottom:20px;">
+    <h2 style="color:#00d4ff;">${generateTitle(prompt, genre)}</h2>
+    <p style="color:#888;font-style:italic;">A ${tone} ${genre.toUpperCase()} story</p>
+    <p style="color:#555;font-size:0.85rem;">Generated by Story Board App</p>
+  </div>`;
+
+  script += `<div class="action" style="margin-bottom:20px;padding:15px;background:#00d4ff11;border-radius:8px;">
+    <strong style="color:#00d4ff;">CAST:</strong><br>`;
+  charProfiles.forEach(c => {
+    script += `• <strong>${c.name}</strong> — ${c.role}${c.personality ? `, ${c.personality}` : ''}<br>`;
+  });
+  script += `</div>`;
+
+  // Generate scenes
+  const sceneTypes = ['opening', 'rising', 'conflict', 'climax', 'twist', 'falling', 'resolution'];
+  const locations = gs.setting.split(', ');
+
+  for (let i = 0; i < sceneCount; i++) {
+    const sceneType = sceneTypes[Math.min(i, sceneTypes.length - 1)];
+    const location = locations[i % locations.length] || locations[0];
+
+    script += `<div class="scene-header">SCENE ${i + 1}: ${sceneType.toUpperCase()}</div>`;
+    script += `<div class="action">INT. ${location.toUpperCase()} — ${gs.time.toUpperCase()}</div>`;
+    script += `<div class="action">${generateSceneDescription(sceneType, location, gs, ta, charProfiles, prompt)}</div>`;
+
+    // Add dialogue
+    const speakers = shuffleArray([...charProfiles]).slice(0, Math.min(3, charProfiles.length));
+    speakers.forEach(speaker => {
+      const line = generateDialogue(speaker, sceneType, tone, genre);
+      script += `<div class="dialogue"><span class="speaker">${speaker.name.toUpperCase()}</span><br>${line}</div>`;
+    });
+
+    // Add action beat
+    if (Math.random() > 0.3) {
+      script += `<div class="action">${generateActionBeat(sceneType, charProfiles, genre)}</div>`;
+    }
+
+    script += `<div style="margin:15px 0;text-align:center;color:#333;">***</div>`;
+  }
+
+  // Final scene wrap-up for non-7-scene stories
+  if (sceneCount < 7) {
+    script += `<div class="scene-header">FINALE</div>`;
+    script += `<div class="action">${generateEnding(charProfiles, tone, genre, prompt)}</div>`;
+  }
+
+  return script;
+}
+
+function generateTitle(prompt, genre) {
+  const titles = {
+    noir: ['Shadows of Doubt', 'The Last Witness', 'Neon Lies', 'Broken Badge'],
+    scifi: ['Starbound', 'The Silicon Prophecy', 'Neon Horizon', 'Quantum Ghost'],
+    fantasy: ['The Crown of Ashes', 'Dragon\'s Oath', 'The Last Grimoire', 'Throne of Thorns'],
+    horror: ['The Hollow Ones', 'Whispers in the Walls', 'Blood Moon', 'The Unseen'],
+    romance: ['Second Chances', 'Letters Never Sent', 'The Coffee Shop Promise', 'Across the Distance'],
+    comedy: ['The Misadventure', 'Oops, Wrong Planet', 'Chaos Theory', 'The Accidental Hero'],
+    action: ['Zero Hour', 'Rogue Protocol', 'Burning Sky', 'The Extract'],
+    western: ['Dust and Honor', 'The Last Round', 'Iron & Lead', 'Sunset Riders']
+  };
+  const list = titles[genre] || titles.noir;
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function generateSceneDescription(type, location, gs, tone, chars, prompt) {
+  const descs = {
+    opening: [
+      `The ${location} is quiet. Too quiet. ${chars[0]?.name || 'A figure'} stands alone, lost in thought.`,
+      `Rain drums against the ${location}. ${chars[0]?.name || 'Someone'} enters, shaking off the ${gs.time}.`,
+      `The ${location} buzzes with tension. All eyes are on ${chars[0]?.name || 'the stranger'}.`
+    ],
+    rising: [
+      `A clue emerges. ${chars[1]?.name || 'Another character'} confronts ${chars[0]?.name || 'the lead'} with unsettling news.`,
+      `The stakes rise. What started as simple has become dangerously complicated.`,
+      `Trust frays. In the ${location}, alliances are tested.`
+    ],
+    conflict: [
+      `Tempers flare. ${chars[0]?.name || 'The protagonist'} and ${chars[1]?.name || 'the antagonist'} face off.`,
+      `The confrontation everyone feared. Words cut deeper than blades in the ${location}.`,
+      `Secrets spill. The ${location} becomes a battleground of wills.`
+    ],
+    climax: [
+      `Everything converges. ${chars[0]?.name || 'The hero'} makes an impossible choice.`,
+      `The moment of truth. Lives hang in the balance at the ${location}.`,
+      `No turning back. ${chars[0]?.name || 'Someone'} takes a stand that changes everything.`
+    ],
+    twist: [
+      `But nothing is as it seemed. A revelation shatters every assumption.`,
+      `The truth, when it comes, is worse than the lie. ${chars[Math.floor(Math.random()*chars.length)]?.name || 'A character'} knew all along.`,
+      `The real enemy was never who they thought. The ${location} holds the final clue.`
+    ],
+    falling: [
+      `Aftermath. The ${location} feels emptier now. The cost becomes clear.`,
+      `Wounds, physical and otherwise, begin to show. The ${tone} reality sets in.`,
+      `What remains when the storm passes? Only ${chars[0]?.name || 'the survivor'} and the silence.`
+    ],
+    resolution: [
+      `Dawn breaks over the ${location}. Somehow, impossibly, it's over.`,
+      `${chars[0]?.name || 'The lead'} walks away changed. Some stories don't end—they just pause.`,
+      `The ${location} will remember. And so will ${chars[0]?.name || 'they'}.`
+    ]
+  };
+  const list = descs[type] || descs.opening;
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function generateDialogue(char, sceneType, tone, genre) {
+  const patterns = {
+    noir: {
+      dark: ["I stopped believing in happy endings a long time ago.", "The city chews up idealists. I'm still here.", "Everybody's got a secret. Especially me."],
+      light: ["Even in the dark, there's a punchline somewhere.", "I've seen worse. I've caused worse.", "The case is closed. The bar is open."],
+      suspenseful: ["We're being watched. Don't look.", "Trust me. Actually—don't.", "Every word we say echoes somewhere."],
+      humorous: ["I'm a detective. I detect. It's in the name.", "My office, my rules. Rule one: no crying.", "I solve crimes the way I solve everything—poorly."],
+      melancholic: ["Some doors, once opened, never close.", "I remember when this city was different. Or maybe I was.", "The past isn't dead. It's just waiting."]
+    },
+    scifi: {
+      dark: ["The machine knows. That's the problem.", "We're not the first civilization to think we were special.", "The stars don't care. That's their charm."],
+      light: ["Teleportation: 10% science, 90% hoping you reassemble right.", "My robot sidekick has better people skills than me.", "In space, no one can hear you make bad decisions."],
+      suspenseful: ["The AI predicted this. It predicted everything.", "That signal? It's not from our timeline.", "Don't trust the oxygen readings. Don't trust anything."],
+      humorous: ["I didn't sign up for intergalactic diplomacy. I signed up for the dental.", "My spaceship has a personality. It's sarcastic.", "Aliens exist. They're just as confused as we are."],
+      melancholic: ["Earth is a memory now. A good one, mostly.", "We left home to find ourselves. We found emptiness.", "The future was supposed to be better. We were supposed to be better."]
+    },
+    fantasy: {
+      dark: ["Magic has a price. I've paid it twice.", "The throne is built on bones. Always has been.", "Prophecy is just history written by the victors."],
+      light: ["Adventure! Possibly! If we don't die first!", "My sword is enchanted. My sense of direction is not.", "Dragons are misunderstood. Mostly. Some are jerks."],
+      suspenseful: ["The spell is breaking. We have minutes.", "The forest remembers what men forget.", "Trust the rogue. That's never gone wrong."],
+      humorous: ["I'm a wizard. I wizard. It's a verb now.", "The quest said 'legendary hero.' It got me instead.", "My familiar is a cat. He's judging me. He always is."],
+      melancholic: ["The kingdom I swore to protect is ash.", "Magic fades. So do we.", "I knew the old world. You wouldn't recognize it."]
+    },
+    horror: {
+      dark: ["It's inside the walls. It's always been inside the walls.", "I saw it. No one believes me. No one ever does.", "The house remembers. The house wants."],
+      light: ["Ghosts are just roommates who don't pay rent.", "I've survived worse. Tuesday was worse.", "If we die, I'm haunting you first."],
+      suspenseful: ["Don't breathe. It hears breathing.", "The mirror showed something that wasn't there before.", "We shouldn't have opened the door. We knew. We opened it anyway."],
+      humorous: ["My survival plan is screaming and running. It's versatile.", "Demons hate puns. That's my entire strategy.", "I'm not brave. I'm just too stubborn to die."],
+      melancholic: ["The thing that haunts me has my face.", "We brought this here. Our curiosity, our curse.", "Some doors close forever. Some should have stayed closed."]
+    },
+    romance: {
+      dark: ["I loved you before I knew what love cost.", "We're broken in compatible ways.", "Every goodbye has been practice for this one."],
+      light: ["You're insufferable. I mean that affectionately.", "Falling for you was inconvenient. I'm doing it anyway.", "My heart has terrible taste. It chose you."],
+      suspenseful: ["If I say it, everything changes. If I don't, I lose you anyway.", "One more minute. Give me one more minute.", "The train leaves at midnight. So do I, unless..."],
+      humorous: ["I tripped into your life. Literally. There was a curb.", "Our meet-cute was a disaster. Our everything-cute is a disaster.", "I wrote you a letter. Then ten more. Then I panicked."],
+      melancholic: ["We were perfect for a season. Some seasons are short.", "I kept every ticket stub. Every receipt. Every memory.", "Loving you was the easiest thing I ever did. Letting go is harder."]
+    },
+    comedy: {
+      dark: ["My life is a tragedy. The universe thinks it's a sitcom.", "I'm one bad day from becoming the villain. Today was close.", "Dark humor is like food. Not everyone gets it."],
+      light: ["I've got a plan! It's a bad plan! It's the only plan!", "Why be normal when you can be memorable?", "My therapist has a therapist."],
+      suspenseful: ["The stakes are high. My competence is low.", "If this goes wrong—and it will—blame me. I do.", "We're surrounded. On the bright side, we're together."],
+      humorous: ["I'm not lazy. I'm energy efficient.", "My superpower is making situations worse. It's very effective.", "I came, I saw, I made it weird."],
+      melancholic: ["I joke because the alternative is feeling things.", "Under this cheerful exterior is... more cheerful exterior. Layers.", "Comedy is tragedy plus time. I'm still in the tragedy phase."]
+    },
+    action: {
+      dark: ["I've got nothing left to lose. That's dangerous.", "Collateral damage has a name. It has faces.", "The mission doesn't care about my conscience."],
+      light: ["Explosions are just punctuation!", "I work out. I also work in, out, and sideways.", "Plan B? Plan A was already Plan B."],
+      suspenseful: ["Three seconds. That's all I've got.", "The building's coming down. We're still inside.", "One shot. One chance. No pressure."],
+      humorous: ["I said 'cover me,' not 'watch me embarrass myself.'", "My combat style is 'flail and pray.' It's surprisingly effective.", "I don't always dodge bullets, but when I do, it's accidental."],
+      melancholic: ["Every scar has a story. I'm running out of skin.", "The war ends. The fighting doesn't.", "I saved the world. I couldn't save everyone in it."]
+    },
+    western: {
+      dark: ["This town breeds killers. I'm just the latest.", "Justice wears a gun out here. Sometimes it misfires.", "The frontier takes what it wants. It wanted my soul."],
+      light: ["A man's gotta do what a horse won't.", "I came for the gold. I stayed for the saloon.", "The west is wild. I'm just visiting."],
+      suspenseful: ["High noon. The clock's ticking. So's my heart.", "They're coming. Twenty riders. Dust on the horizon.", "The sheriff's dead. I'm what's left."],
+      humorous: ["My horse is smarter than me. He's also prettier.", "I don't start fights. I finish them poorly.", "Whiskey's for drinking. Water's for fighting over."],
+      melancholic: ["The open road ain't so open anymore.", "I buried friends in unmarked graves. I remember every one.", "The west was won. I lost something in the winning."]
+    }
+  };
+
+  const genreLines = patterns[genre] || patterns.noir;
+  const toneLines = genreLines[tone] || genreLines.dark;
+  return toneLines[Math.floor(Math.random() * toneLines.length)];
+}
+
+function generateActionBeat(sceneType, chars, genre) {
+  const beats = {
+    opening: [`${chars[0]?.name || 'The lead'} adjusts their collar, a nervous habit.`, `A distant sound echoes. No one reacts. They've heard it before.`, `The camera pans across the room, settling on a detail that will matter later.`],
+    rising: [`${chars[1]?.name || 'Someone'} pulls out a photograph, worn at the edges.`, `A phone rings. No one moves to answer it.`, `The temperature drops. Something has shifted.`],
+    conflict: [`${chars[0]?.name || 'A character'} slams a fist on the table. The room goes silent.`, `Weapons are drawn. Or words—sometimes words cut deeper.`, `A betrayal hangs in the air, unspoken but suffocating.`],
+    climax: [`Everything slows. ${chars[0]?.name || 'The hero'} sees their path clearly for the first time.`, `A sacrifice is made. The cost is written on every face.`, `The ${genre === 'scifi' ? 'ship' : genre === 'fantasy' ? 'castle' : 'building'} shakes. This is the moment.`],
+    twist: [`${chars[Math.floor(Math.random()*chars.length)]?.name || 'Someone'} reveals the truth with a smile that doesn't reach their eyes.`, `The evidence was there all along. Hidden in plain sight.`, `Nothing will be the same after this. Nothing ever is.`],
+    falling: [`${chars[0]?.name || 'The survivor'} picks up the pieces. Some are too sharp to hold.`, `The silence is louder than the chaos was.`, `Regret settles like dust. It gets everywhere.`],
+    resolution: [`${chars[0]?.name || 'The lead'} walks into the ${genre === 'scifi' ? 'sunrise of a new planet' : genre === 'fantasy' ? 'morning mist' : 'rising sun'}. Whatever comes next, they'll face it.`, `The story ends. But ${chars[0]?.name || 'they'}'s story continues.`, `Fade to ${genre === 'noir' ? 'black' : 'gold'}.`]
+  };
+  const list = beats[sceneType] || beats.opening;
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function generateEnding(chars, tone, genre, prompt) {
+  const endings = {
+    dark: `The ${genre} story closes on a somber note. ${chars[0]?.name || 'The protagonist'} survives, but survival isn't victory. The ${genre === 'noir' ? 'city' : genre === 'scifi' ? 'stars' : genre === 'fantasy' ? 'kingdom' : 'world'} keeps turning, indifferent. Some scars don't fade—they just become familiar.`,
+    light: `${chars[0]?.name || 'The hero'} finds something worth fighting for. The ${genre === 'noir' ? 'dawn breaks over the city' : genre === 'scifi' ? 'ship sets course for home' : genre === 'fantasy' ? 'sun rises on a new era' : 'future looks bright'}. Not perfect, but possible. And sometimes, possible is enough.`,
+    suspenseful: `The final piece clicks into place. ${chars[0]?.name || 'Someone'} understood the game too late—or just in time. The ${genre === 'horror' ? 'threat' : 'danger'} isn't gone. It's waiting. But so are they.`,
+    humorous: `Credits roll over chaos. ${chars[0]?.name || 'The lead'} shrugs at the camera. Somehow, against all logic, it worked. The ${genre === 'scifi' ? 'robot' : 'sidekick'} delivers the final punchline. Fade out on laughter.`,
+    melancholic: `${chars[0]?.name || 'The protagonist'} stands alone, watching ${genre === 'noir' ? 'rain wash the streets clean' : genre === 'scifi' ? 'Earth shrink to a blue dot' : genre === 'fantasy' ? 'the castle gates close' : 'the sun set one last time'}. What was lost can't be recovered. What remains is enough. Barely. Beautifully.`
+  };
+  return endings[tone] || endings.dark;
+}
+
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ===== EXPORT FUNCTIONS =====
+function copyStory() {
+  const text = document.getElementById('storyOutput').innerText;
+  navigator.clipboard.writeText(text).then(() => alert('Script copied to clipboard!'));
+}
+
+function downloadStory() {
+  const text = document.getElementById('storyOutput').innerText;
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `story-${Date.now()}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ===== UPDATE UI =====
+function updateUI() {
+  renderCharGrid();
+  document.getElementById('charCount').textContent = `${characters.length} / 100 characters`;
+}
+
+// ===== INIT =====
+updateUI();
+</script>
+</body>
+</html>
