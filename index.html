@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartoon Story Board Pro</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: #fff; padding: 10px; }
+        
+        /* High Visibility Inputs */
+        input, textarea { 
+            width: 100%; padding: 15px; margin: 10px 0; 
+            background: #2c2c2c; color: white; border: 2px solid #555; 
+            border-radius: 8px; font-size: 16px; box-sizing: border-box;
+        }
+
+        /* Large Touch Targets */
+        button { 
+            width: 100%; padding: 20px; margin: 10px 0; 
+            border: none; border-radius: 8px; font-size: 18px; font-weight: bold; 
+            cursor: pointer; display: block;
+        }
+
+        .btn-add { background: #00e676; color: black; }
+        .btn-gen { background: #2979ff; color: white; }
+        .btn-batch { background: #616161; color: white; }
+
+        .ep-card { 
+            background: #1e1e1e; border: 1px solid #444; 
+            padding: 15px; margin: 10px 0; border-radius: 8px; 
+        }
+    </style>
+</head>
+<body>
+    <h2>🎬 Story Board Pro</h2>
+    
+    <input type="text" id="name" placeholder="Lead Character Name">
+    <button class="btn-add" onclick="addLead()">+ ADD CHARACTER</button>
+    
+    <hr style="border: 0; border-top: 1px solid #444; margin: 20px 0;">
+    
+    <h3>Episode Generator</h3>
+    <input type="text" id="theme" placeholder="Adventure Theme...">
+    <button class="btn-gen" onclick="generateEpisode()">GENERATE SCRIPT</button>
+
+    <h3>Saved Episodes</h3>
+    <div id="epList"></div>
+
+    <script>
+        let chars = JSON.parse(localStorage.getItem('story_chars') || '[]');
+        let eps = JSON.parse(localStorage.getItem('story_eps') || '[]');
+        const quirks = ["juggling", "wearing a giant hat", "walking a pet rock", "flying a kite"];
+
+        function addLead() {
+            chars.push({ name: document.getElementById('name').value, isBg: false });
+            localStorage.setItem('story_chars', JSON.stringify(chars));
+            alert("Character Saved!");
+        }
+
+        function generateEpisode() {
+            if(chars.length < 2) { alert("Add at least 2 characters!"); return; }
+            let lead = chars[Math.floor(Math.random()*chars.length)];
+            let q = quirks[Math.floor(Math.random()*quirks.length)];
+            
+            let script = `EPISODE: ${document.getElementById('theme').value}\n` +
+                         `LEAD: ${lead.name}\n` +
+                         `ACTION: Exploring while an Extra is busy ${q}.`;
+            
+            eps.push(script);
+            localStorage.setItem('story_eps', JSON.stringify(eps));
+            render();
+        }
+
+        function render() {
+            document.getElementById('epList').innerHTML = eps.map(e => 
+                `<div class="ep-card"><pre style="white-space:pre-wrap">${e}</pre></div>`).join('');
+        }
+        render();
+    </script>
+</body>
+</html>
