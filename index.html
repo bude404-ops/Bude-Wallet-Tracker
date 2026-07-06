@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BUDE Storyboard v2</title>
+
+<style>
+:root{ --bg:#000; --card:#121212; --card2:#1e1e1e; --border:#2f3336; --text:#fff; --muted:#9aa4ad; --accent:#1da1f2; --bad:#e0245e; }
+*{ box-sizing:border-box; margin:0; padding:0; font-family:system-ui; }
+body{ background:var(--bg); color:var(--text); padding-bottom:90px; }
+header{ position:sticky; top:0; z-index:10; background:rgba(0,0,0,.85); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:14px; display:flex; justify-content:space-between; align-items:center; }
+.tabs{ display:flex; background:var(--card); margin:10px; border-radius:14px; overflow:hidden; border:1px solid var(--border); }
+.tab{ flex:1; padding:10px; text-align:center; font-size:14px; color:var(--muted); transition:.2s; cursor:pointer; }
+.tab.active{ background:var(--accent); color:#fff; font-weight:600; }
+.section{ display:none; padding:12px; }
+.section.active{ display:block; }
+.card{ background:var(--card); border:1px solid var(--border); border-radius:16px; padding:14px; margin-bottom:12px; }
+input,textarea,select{ width:100%; padding:12px; margin-top:8px; border-radius:12px; border:1px solid var(--border); background:var(--card2); color:var(--text); font-size:14px; }
+button{ width:100%; padding:12px; border-radius:12px; border:none; margin-top:10px; font-weight:600; font-size:14px; cursor:pointer; }
+.btn{background:var(--accent);color:#fff}
+.small{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.danger{background:var(--bad);color:#fff}
+.char{display:flex;gap:12px;align-items:flex-start;}
+.avatar{width:64px;height:64px;border-radius:16px;background:var(--card2);overflow:hidden;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;}
+.avatar img{width:100%;height:100%;object-fit:cover;}
+.row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.tag{font-size:11px;padding:4px 8px;border-radius:10px;background:var(--card2);color:var(--muted);}
+.imgs{display:flex;gap:8px;overflow-x:auto;margin-top:10px;}
+.imgs img{width:72px;height:72px;border-radius:12px;object-fit:cover;border:1px solid var(--border);}
+.ep-title{font-weight:700;font-size:15px;}
+.ep-desc{color:var(--muted);font-size:13px;margin-top:6px;white-space:pre-wrap;}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:100;}
+.modal img{max-width:95%;max-height:85%;border-radius:12px;}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);padding:10px 14px;border-radius:12px;opacity:0;transition:.2s;font-size:13px;pointer-events:none;}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<header><b>BUDE Storyboard</b><span id="count"></span></header>
+
+<div class="tabs">
+  <div class="tab active" onclick="tab(this, 'c')">👤</div>
+  <div class="tab" onclick="tab(this, 'e')">🎬</div>
+  <div class="tab" onclick="tab(this, 'x')">📤</div>
+</div>
+
+<div class="section active" id="c">
+  <div class="card">
+    <input id="n" placeholder="Name">
+    <select id="r"><option value="lead">Lead</option><option value="support">Support</option><option value="bg">Background</option></select>
+    <textarea id="d" placeholder="Description"></textarea>
+    <input id="s" placeholder="Skills (comma separated)">
+    <input type="file" id="img" multiple accept="image/*">
+    <button type="button" class="btn" onclick="addChar()">Add Character</button>
+  </div>
+  <div id="clist"></div>
+</div>
+
+<div class="section" id="e">
+  <div class="card">
+    <input id="genIdeas" placeholder="Keywords (e.g. Treehouse, Magic, Lost Dog)">
+    <button type="button" class="small" onclick="generateEp()">Generate Cartoon Script</button>
+    <hr style="border:0;border-top:1px solid #2f3336;margin:15px 0">
+    <input id="et" placeholder="Episode title">
+    <textarea id="es" rows="6" placeholder="Synopsis/Script draft"></textarea>
+    <button type="button" class="btn" onclick="addEp()">Save Episode</button>
+  </div>
+  <div id="elist"></div>
+</div>
+
+<div class="section" id="x">
+  <div class="card">
+    <button type="button" class="btn" onclick="exp()">Export JSON</button>
+    <button type="button" class="small" onclick="copy()">Copy</button>
+    <button type="button" class="danger" onclick="reset()">Reset</button>
+  </div>
+</div>
+
+<div class="modal" id="m" onclick="this.style.display='none'"><img id="mi"></div>
+<div class="toast" id="t"></div>
+
+<script>
+let db = JSON.parse(localStorage.getItem("bude2")||'{"c":[],"e":[],"id":1}');
+
+function save(){
+  localStorage.setItem("bude2",JSON.stringify(db));
+  ui();
+}
+
+function tab(el, id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+}
+
+function generateEp() {
+  const input = document.getElementById('genIdeas').value.trim();
+  if (!input) return toast("Enter some keywords first!");
+  const ideas = input.split(',').map(x => x.trim());
+  const theme = ideas[0];
+  const titles = [`The Great ${theme} Adventure`, `Mystery of the ${theme}`, `The Day ${theme} Saved the Town`, `Operation: ${theme}`, `The ${theme} Surprise`];
+  const scripts = [
+    `INTRO: Our heroes are hanging out when they discover something strange: ${theme}! \n\nMIDDLE: Things get silly as they try to figure out how to use it. A mix-up leads to a fun chase scene across town. \n\nENDING: They learn that working together is the best way to solve any problem!`,
+    `It’s a bright, sunny day until ${theme} appears and starts causing trouble! The team rushes to help, using their special skills to turn the situation around. Everyone learns a valuable lesson about friendship and helping others.`,
+    `A new challenge arrives in the form of ${theme}. Our heroes have to plan a clever way to handle it, leading to a big, funny misunderstanding. In the end, they discover that even the smallest idea can make a huge difference.`
+  ];
+  document.getElementById('et').value = titles[Math.floor(Math.random() * titles.length)];
+  document.getElementById('es').value = scripts[Math.floor(Math.random() * scripts.length)];
+  toast("Script Drafted!");
+}
+
+function addChar(){
+  let files=[...document.getElementById('img').files];
+  let imgs=[];
+  let done=0;
+  function finish(){
+    db.c.push({id:db.id++, n:n.value, r:r.value, d:d.value, s:s.value.split(',').map(x=>x.trim()).filter(Boolean), i:imgs});
+    n.value=''; r.value='lead'; d.value=''; s.value=''; document.getElementById('img').value='';
+    save(); toast("Character Added");
+  }
+  if(files.length===0) return finish();
+  files.forEach(f=>{
+    let r=new FileReader();
+    r.onload=e=>{
+      let img=new Image();
+      img.onload=()=>{
+        let c=document.createElement("canvas");
+        c.width=400; c.height=img.height*(400/img.width);
+        c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+        imgs.push(c.toDataURL("image/jpeg",0.7));
+        done++; if(done===files.length) finish();
+      };
+      img.src=e.target.result;
+    };
+    r.readAsDataURL(f);
+  });
+}
+
+function addEp(){
+  if(!et.value.trim()) return toast("Enter a title");
+  db.e.push({id:db.id++, t:et.value.trim(), s:es.value.trim()});
+  et.value=''; es.value='';
+  save();
+  toast("Episode Added");
+}
+
+function ui(){
+  document.getElementById('count').textContent = db.c.length + " chars";
+  document.getElementById('clist').innerHTML = db.c.map(c=>`
+    <div class="card">
+      <div class="char">
+        <div class="avatar" onclick="view('${c.i[0]||''}')">${c.i[0]?`<img src="${c.i[0]}">`:""}</div>
+        <div><b>${c.n}</b><br><small>${c.r}</small><div style="font-size:13px;margin-top:4px;">${c.d||''}</div>
+        <div class="row">${(c.s||[]).map(x=>`<span class='tag'>${x}</span>`).join('')}</div></div>
+      </div>
+      <div class="imgs">${(c.i||[]).map(i=>`<img src="${i}" onclick="view('${i}')">`).join('')}</div>
+    </div>`).join('');
+  document.getElementById('elist').innerHTML = db.e.map(e=>`
+    <div class="card">
+      <div class="ep-title">${e.t}</div>
+      <div class="ep-desc">${e.s}</div>
+    </div>`).join('');
+}
+
+function view(i){ if(i) { document.getElementById('m').style.display='flex'; document.getElementById('mi').src=i; } }
+function exp(){ prompt("Copy JSON", JSON.stringify(db)); }
+function copy(){ navigator.clipboard.writeText(JSON.stringify(db)); toast("Copied"); }
+function reset(){ if(confirm("Reset all?")){ db={c:[],e:[],id:1}; save(); } }
+function toast(x){ let t=document.getElementById('t'); t.textContent=x; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1200); }
+
+ui();
+</script>
+</body>
+</html>
