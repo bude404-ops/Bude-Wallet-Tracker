@@ -1,18 +1,18 @@
 {
-    "version": "2.1.0",
-    "name": "AI Provider Layer",
+    "version": "2.2.0",
+    "name": "Project Memory System",
     "files": {
-        "bude-engine/ai_provider.js": {
+        "bude-engine/memory_manager.js": {
             "mode": "system",
-            "content": "class AIProvider {\n\nconstructor(){\nthis.provider='template';\nthis.model='default';\n}\n\nsetProvider(name,model){\nthis.provider=name;\nthis.model=model;\n}\n\nasync generate(prompt,type){\n\nreturn {\nprovider:this.provider,\nmodel:this.model,\ntype:type,\nprompt:prompt,\nstatus:'AI provider ready'\n};\n}\n\n}\n\nwindow.BudEAI=new AIProvider();"
+            "content": "class MemoryManager {\n\nconstructor(){\nthis.memory={\ncharacters:[],\nworlds:[],\nstories:[]\n};\n}\n\nadd(type,data){\nif(this.memory[type]){\nthis.memory[type].push(data);\n}\nthis.save();\n}\n\nget(type){\nreturn this.memory[type] || [];\n}\n\nsave(){\nlocalStorage.setItem('bude_memory',JSON.stringify(this.memory));\n}\n\nload(){\nlet data=localStorage.getItem('bude_memory');\nif(data){this.memory=JSON.parse(data);}\n}\n\n}\n\nwindow.BudEMemory=new MemoryManager();"
         },
-        "bude-engine/provider_config.json": {
+        "bude-engine/memory_config.json": {
             "mode": "system",
-            "content": "{\n \"provider\":\"template\",\n \"model\":\"default\",\n \"localModels\":true,\n \"imageModels\":false,\n \"videoModels\":false\n}"
+            "content": "{\n \"memory_enabled\":true,\n \"character_consistency\":true,\n \"world_consistency\":true,\n \"project_history\":true\n}"
         },
-        "docs/ai_status.html": {
+        "docs/memory.html": {
             "mode": "system",
-            "content": "<html><head><link rel='stylesheet' href='styles.css'></head><body><main class='container'><h1>\ud83e\udd16 AI Status</h1><div class='status'>Provider: Template</div><div class='status'>Local Model Support: Ready</div><a class='button' href='index.html'>\u2b05 Back</a></main></body></html>"
+            "content": "<html><head><link rel='stylesheet' href='styles.css'></head><body><main class='container'><h1>\ud83e\udde0 BudE Memory</h1><div class='status'>Character Memory: Enabled</div><div class='status'>World Memory: Enabled</div><div class='status'>Project History: Enabled</div><a class='button' href='index.html'>\u2b05 Back</a></main></body></html>"
         }
     }
 }
