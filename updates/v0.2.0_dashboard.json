@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "name": "Dashboard Upgrade",
+
+  "files": {
+
+    "dashboard/index.html": {
+      "mode": "system",
+      "content": "<!DOCTYPE html><html><head><title>BudE StoryBoard AI</title><link rel=\"stylesheet\" href=\"styles.css\"></head><body><h1>BudE StoryBoard AI</h1><h2>Creative Command Center v0.2.0</h2><div class=\"card\">🟢 Engine Online</div><div class=\"card\">📁 Projects Ready</div><div class=\"card\">🧩 Modules Loading</div><script src=\"app.js\"></script></body></html>"
+    },
+
+    "dashboard/app.js": {
+      "mode": "system",
+      "content": "console.log('BudE Dashboard v0.2.0 Online');"
+    },
+
+    "dashboard/styles.css": {
+      "mode": "system",
+      "content": "body{background:#080d18;color:white;font-family:Arial;padding:20px}.card{background:#162033;padding:20px;margin:15px;border-radius:15px}"
+    }
+
+  }
+}
