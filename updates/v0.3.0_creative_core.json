@@ -1,0 +1,31 @@
+{
+  "version": "0.3.0",
+  "name": "Creative Core Foundation",
+
+  "files": {
+
+    "bude-engine/project_manager.py": {
+      "mode": "system",
+      "content": "import os\nimport json\n\nPROJECTS='projects'\n\nclass ProjectManager:\n\n    def create_project(self,name):\n        path=f'{PROJECTS}/{name}'\n        os.makedirs(path,exist_ok=True)\n\n        data={\n            'name':name,\n            'stories':[],\n            'characters':[],\n            'worlds':[]\n        }\n\n        with open(f'{path}/project.json','w') as f:\n            json.dump(data,f,indent=4)\n\n        return path\n\n    def list_projects(self):\n        return os.listdir(PROJECTS)\n"
+    },
+
+
+    "modules/story_engine/story_engine.py": {
+      "mode": "system",
+      "content": "class StoryEngine:\n\n    def create_story(self,prompt):\n        return {\n            'title':'New Story',\n            'idea':prompt,\n            'chapters':[]\n        }\n"
+    },
+
+
+    "modules/character_studio/character_memory.py": {
+      "mode": "system",
+      "content": "class Character:\n\n    def __init__(self,name):\n        self.name=name\n        self.personality=''\n        self.background=''\n        self.appearance=''\n        self.skills=[]\n"
+    },
+
+
+    "modules/world_builder/world_memory.py": {
+      "mode": "system",
+      "content": "class World:\n\n    def __init__(self,name):\n        self.name=name\n        self.history=''\n        self.cultures=[]\n        self.locations=[]\n"
+    }
+
+  }
+}
