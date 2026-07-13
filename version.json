@@ -1,14 +1,18 @@
 {
-    "version": "1.9.7",
-    "name": "Mobile UI Cleanup",
+    "version": "1.9.8",
+    "name": "Dashboard Navigation Core",
     "files": {
-        "docs/index.html": {
+        "docs/nav.js": {
             "mode": "system",
-            "content": "<!DOCTYPE html><html><head><title>BudE StoryBoard AI</title><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='stylesheet' href='styles.css'></head><body><main class='container'><header><h1>\ud83e\udd16 BudE</h1><p>StoryBoard AI Studio</p></header><section class='status'>\ud83d\udfe2 System Online</section><a class='button' href='generator.html'>\u270d\ufe0f Create Story</a><a class='button' href='character.html'>\ud83d\udc64 Character Studio</a><a class='button' href='world.html'>\ud83c\udf0e World Builder</a><a class='button' href='storyboard.html'>\ud83c\udfac Storyboard</a><a class='button' href='art.html'>\ud83c\udfa8 Art Studio</a><a class='button' href='director.html'>\ud83e\udd16 AI Director</a></main></body></html>"
+            "content": "function go(page){window.location.href=page;}\nfunction back(){window.history.back();}"
         },
         "docs/styles.css": {
             "mode": "system",
-            "content": "html,body{margin:0;padding:0;width:100%;min-height:100%;background:#08111f;color:white;font-family:Arial,sans-serif}.container{width:100%;max-width:500px;margin:0 auto;padding:20px}header{text-align:center;margin-bottom:20px}.status{background:#16253b;border-radius:14px;padding:18px;text-align:center;margin-bottom:20px}.button{display:block;width:100%;background:#16253b;color:white;text-decoration:none;text-align:center;padding:22px;margin-bottom:16px;border-radius:16px;font-size:20px}.button:active{transform:scale(.98)}"
+            "content": "html,body{margin:0;padding:0;background:#08111f;color:white;font-family:Arial,sans-serif}.container{width:100%;max-width:500px;margin:auto;padding:20px}.header{text-align:center;margin-bottom:20px}.button{display:block;width:100%;padding:20px;margin:15px 0;background:#16253b;color:white;text-decoration:none;text-align:center;border-radius:15px;font-size:20px}.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.small{padding:12px;font-size:16px}"
+        },
+        "docs/components/menu.html": {
+            "mode": "system",
+            "content": "<a class='button small' href='index.html'>\ud83c\udfe0 Home</a><a class='button small' href='generator.html'>\u270d\ufe0f Create</a>"
         }
     }
 }
