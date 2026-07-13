@@ -1,18 +1,18 @@
 {
-    "version": "1.1.0",
-    "name": "AI Director Core",
+    "version": "1.2.0",
+    "name": "Comic And Manga Studio",
     "files": {
-        "modules/ai_director/director.py": {
+        "modules/comic_creator/comic_manager.py": {
             "mode": "system",
-            "content": "class AIDirector:\n\n    def review_story(self,story):\n        return {\n            'score':0,\n            'pacing':'Review needed',\n            'characters':'Review needed',\n            'emotion':'Review needed',\n            'suggestions':[]\n        }\n\n\n    def suggest_improvements(self,production):\n        suggestions=[]\n\n        if not production.get('characters'):\n            suggestions.append('Add character development')\n\n        if not production.get('story'):\n            suggestions.append('Develop story structure')\n\n        return suggestions\n\n\n    def camera_notes(self,scene):\n        return {\n            'camera':'Suggested cinematic angle',\n            'lighting':'Suggested lighting style'\n        }\n"
+            "content": "import os\nimport json\n\nCOMIC_FOLDER='projects/comics'\n\nclass ComicManager:\n\n    def create_comic(self,title):\n        os.makedirs(COMIC_FOLDER,exist_ok=True)\n\n        comic={\n            'title':title,\n            'style':'',\n            'pages':[],\n            'characters':[],\n            'story':'',\n            'format':'comic'\n        }\n\n        path=f'{COMIC_FOLDER}/{title}.json'\n\n        with open(path,'w') as file:\n            json.dump(comic,file,indent=4)\n\n        return path\n\n\n    def create_panel(self,description):\n        return {\n            'description':description,\n            'camera':'',\n            'dialogue':[],\n            'caption':'',\n            'effects':[]\n        }\n"
         },
-        "modules/ai_director/director_prompts.json": {
+        "modules/comic_creator/layouts.json": {
             "mode": "system",
-            "content": "{\n  \"review_types\": [\n    \"Story Quality\",\n    \"Character Development\",\n    \"Pacing\",\n    \"Emotion\",\n    \"Visual Direction\",\n    \"Audience Impact\"\n  ],\n  \"roles\": [\n    \"Film Director\",\n    \"Anime Director\",\n    \"Comic Editor\",\n    \"Game Narrative Director\"\n  ]\n}"
+            "content": "{\n  \"layouts\": [\n    \"1 Panel\",\n    \"2 Panel\",\n    \"4 Panel\",\n    \"6 Panel\",\n    \"Manga Page\",\n    \"Graphic Novel\",\n    \"Web Comic\"\n  ],\n  \"elements\": [\n    \"Speech Bubble\",\n    \"Thought Bubble\",\n    \"Caption Box\",\n    \"Sound Effect\",\n    \"Chapter Cover\"\n  ]\n}"
         },
-        "dashboard/ai_director.html": {
+        "dashboard/comic_studio.html": {
             "mode": "system",
-            "content": "<h1>AI Director</h1>\n<p>BudE reviews and improves creative projects.</p>\n<button>Analyze Project</button>"
+            "content": "<h1>Comic & Manga Studio</h1>\n<p>Create comic pages, manga panels, dialogue, and layouts.</p>\n<button>Create Comic Project</button>"
         }
     }
 }
