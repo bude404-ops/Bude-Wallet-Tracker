@@ -1,22 +1,18 @@
 {
-    "version": "1.7.0",
-    "name": "Local Model Bridge",
+    "version": "1.8.0",
+    "name": "Real Generation Backend",
     "files": {
-        "bude-engine/model_manager.py": {
+        "bude-engine/generation_backend.py": {
             "mode": "system",
-            "content": "import json\nimport os\n\nMODEL_FILE='bude-engine/models.json'\n\nclass ModelManager:\n\n    def __init__(self):\n        self.models=self.load()\n\n\n    def load(self):\n        if os.path.exists(MODEL_FILE):\n            with open(MODEL_FILE,'r') as file:\n                return json.load(file)\n\n        return {'models':[]}\n\n\n    def add_model(self,name,path):\n        self.models['models'].append({\n            'name':name,\n            'path':path,\n            'active':False\n        })\n\n        self.save()\n\n\n    def save(self):\n        with open(MODEL_FILE,'w') as file:\n            json.dump(self.models,file,indent=4)\n"
+            "content": "import json\nimport os\n\nCONFIG='bude-engine/ai_config.json'\n\nclass GenerationBackend:\n\n    def __init__(self):\n        self.config=self.load_config()\n\n\n    def load_config(self):\n        if os.path.exists(CONFIG):\n            with open(CONFIG,'r') as file:\n                return json.load(file)\n\n        return {}\n\n\n    def generate(self,prompt):\n\n        provider=self.config.get('provider','local')\n\n        if provider=='local':\n            return self.local_generate(prompt)\n\n        return {\n            'status':'No provider configured',\n            'prompt':prompt\n        }\n\n\n    def local_generate(self,prompt):\n\n        return {\n            'status':'Local backend ready',\n            'prompt':prompt,\n            'output':'Connect local model runner'\n        }\n"
         },
-        "bude-engine/models.json": {
+        "bude-engine/creative_generator.py": {
             "mode": "system",
-            "content": "{\n  \"models\": [\n  ]\n}"
+            "content": "from prompt_manager import PromptManager\nfrom generation_backend import GenerationBackend\n\nclass CreativeGenerator:\n\n    def __init__(self):\n        self.prompts=PromptManager()\n        self.backend=GenerationBackend()\n\n\n    def create(self,category,input_text):\n\n        prompt=self.prompts.build(category,input_text)\n\n        return self.backend.generate(prompt)\n"
         },
-        "bude-engine/prompt_manager.py": {
+        "bude-engine/generation_config.json": {
             "mode": "system",
-            "content": "class PromptManager:\n\n    def build(self,category,input_text):\n\n        templates={\n            'story':'Create a detailed story from this idea:',\n            'character':'Create a complete character profile from this idea:',\n            'world':'Create a detailed world from this idea:'\n        }\n\n        return templates.get(category,'Create content:')+' '+input_text\n"
-        },
-        "docs/ai_status.html": {
-            "mode": "system",
-            "content": "<h1>BudE AI Engine Status</h1>\n<p>Local model bridge active.</p>\n<p>Waiting for model connection.</p>"
+            "content": "{\n  \"story_generation\":true,\n  \"character_generation\":true,\n  \"world_generation\":true,\n  \"image_generation\":false,\n  \"video_generation\":false\n}"
         }
     }
 }
