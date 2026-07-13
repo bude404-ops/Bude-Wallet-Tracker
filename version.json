@@ -1,18 +1,14 @@
 {
-    "version": "2.0.0",
-    "name": "Creative Generation Engine",
+    "version": "2.0.1",
+    "name": "Generator Engine Link Fix",
     "files": {
-        "bude-engine/creative_engine.js": {
+        "docs/generator.html": {
             "mode": "system",
-            "content": "function createContent(type,input,style){\n\nlet output={\n type:type,\n style:style,\n idea:input\n};\n\nif(type==='Story'){\noutput.title='The '+input;\noutput.sections={\nopening:'A new journey begins.',\nconflict:'A powerful challenge appears.',\nending:'The hero discovers their true purpose.'\n};\n}\n\nif(type==='Character'){\noutput.character={\nname:'Generated Hero',\nappearance:'Designed from '+input,\npersonality:'Brave and determined',\nstrengths:['Courage','Adaptability'],\nweaknesses:['Unknown']\n};\n}\n\nif(type==='World'){\noutput.world={\nname:'Generated Realm',\nhistory:'Created from '+input,\nfactions:['Northern Alliance','Shadow Order'],\nlocations:['Ancient City']\n};\n}\n\nreturn output;\n}"
+            "content": "<!DOCTYPE html><html><head><title>BudE Generator</title><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='stylesheet' href='styles.css'></head><body><main class='container'><header><h1>\u270d\ufe0f Create With BudE</h1></header><label>Idea</label><textarea id='prompt' placeholder='Describe your idea'></textarea><label>Type</label><select id='type'><option>Story</option><option>Character</option><option>World</option></select><label>Style</label><select id='style'><option>Anime</option><option>Fantasy</option><option>Sci-Fi</option><option>Comic</option></select><button onclick='generate()' class='button'>GENERATE</button><pre id='output'>Waiting...</pre></main><script src='creative_engine.js'></script><script src='generator.js'></script></body></html>"
         },
         "docs/generator.js": {
             "mode": "system",
             "content": "function generate(){\nlet prompt=document.getElementById('prompt').value;\nlet type=document.getElementById('type').value;\nlet style=document.getElementById('style').value;\n\nlet output=createContent(type,prompt,style);\n\nlocalStorage.setItem('bude_output',JSON.stringify(output));\n\ndocument.getElementById('output').textContent=JSON.stringify(output,null,2);\n}"
-        },
-        "docs/creative_engine.js": {
-            "mode": "system",
-            "content": "function createContent(type,input,style){return {type:type,style:style,idea:input,status:'Creative engine active'}}"
         }
     }
 }
