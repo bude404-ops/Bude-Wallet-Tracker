@@ -1,7 +1,7 @@
 {
   "project": "BudE StoryBoard AI",
-  "version": "0.1.0",
-  "codename": "Genesis",
+  "version": "0.1.1",
+  "codename": "Genesis Dashboard",
 
   "folders": [
     "dashboard",
@@ -30,7 +30,6 @@
     "exports",
 
     "updates",
-    "updates/v0.2.0",
 
     "docs",
     "tests"
@@ -38,51 +37,69 @@
 
   "files": {
 
-    "dashboard/index.html": "<!DOCTYPE html>\n<html>\n<head><title>BudE StoryBoard AI</title></head>\n<body>\n<h1>BudE StoryBoard AI</h1>\n<p>AI Creative Production Studio</p>\n<div id='status'>Engine Loading...</div>\n<script src='app.js'></script>\n</body>\n</html>",
+    "index.html": {
+      "mode": "system",
+      "content": "<!DOCTYPE html>\n<html>\n<head>\n<title>BudE StoryBoard AI</title>\n<meta http-equiv=\"refresh\" content=\"0; url=dashboard/index.html\">\n</head>\n<body>\nRedirecting to BudE Dashboard...\n</body>\n</html>"
+    },
 
 
-    "dashboard/app.js": "console.log('BudE Dashboard Online');\ndocument.getElementById('status').innerHTML='BudE Engine Online';",
+    "dashboard/index.html": {
+      "mode": "system",
+      "content": "<!DOCTYPE html>\n<html>\n<head>\n<title>BudE StoryBoard AI</title>\n<link rel=\"stylesheet\" href=\"styles.css\">\n</head>\n<body>\n<h1>BudE StoryBoard AI</h1>\n<p>AI Creative Production Studio</p>\n<h2>Engine Status</h2>\n<p>🟢 Online</p>\n<h2>Modules</h2>\n<ul>\n<li>Story Engine</li>\n<li>Character Studio</li>\n<li>World Builder</li>\n<li>Art Studio</li>\n<li>Storyboard</li>\n<li>Animation</li>\n<li>Video Engine</li>\n<li>Voice Studio</li>\n<li>Audio Studio</li>\n<li>AI Director</li>\n</ul>\n<script src=\"app.js\"></script>\n</body>\n</html>"
+    },
 
 
-    "dashboard/styles.css": "body{background:#111;color:white;font-family:Arial;padding:20px;}",
+    "dashboard/app.js": {
+      "mode": "system",
+      "content": "console.log('BudE Dashboard Online');"
+    },
 
 
-    "bude-engine/engine.py": "from version_manager import VersionManager\n\nclass BudEEngine:\n\n    def __init__(self):\n        self.version='0.1.0'\n        self.updater=VersionManager()\n\n    def start(self):\n        print('BudE StoryBoard AI Engine Online')\n        print('Version:',self.version)\n\n\nif __name__=='__main__':\n    engine=BudEEngine()\n    engine.start()",
+    "dashboard/styles.css": {
+      "mode": "system",
+      "content": "body{background:#080d18;color:white;font-family:Arial;padding:20px;}h1{font-size:32px;}"
+    },
 
 
-    "bude-engine/version_manager.py": "class VersionManager:\n\n    def __init__(self):\n        self.current_version='0.1.0'\n\n    def check_updates(self):\n        return 'No updates available'\n\n    def apply_update(self,update):\n        print('Applying update:',update)",
+    "bude-engine/engine.py": {
+      "mode": "system",
+      "content": "class BudEEngine:\n\n    def start(self):\n        print('BudE StoryBoard AI Engine Online')\n\n\nif __name__=='__main__':\n    BudEEngine().start()"
+    },
 
 
-    "bude-engine/project_manager.py": "class ProjectManager:\n    pass",
+    "bude-engine/version_manager.py": {
+      "mode": "system",
+      "content": "class VersionManager:\n\n    def check_updates(self):\n        return 'No updates available'"
+    },
 
 
-    "bude-engine/event_bus.py": "class EventBus:\n    pass",
+    "bude-engine/project_manager.py": {
+      "mode": "system",
+      "content": "class ProjectManager:\n    pass"
+    },
 
 
-    "bude-engine/asset_manager.py": "class AssetManager:\n    pass",
+    "bude-engine/character_memory.py": {
+      "mode": "system",
+      "content": "class CharacterMemory:\n    pass"
+    },
 
 
-    "bude-engine/character_memory.py": "class CharacterMemory:\n    pass",
+    "bude-engine/world_memory.py": {
+      "mode": "system",
+      "content": "class WorldMemory:\n    pass"
+    },
 
 
-    "bude-engine/world_memory.py": "class WorldMemory:\n    pass",
+    "updates/README.md": {
+      "mode": "protected",
+      "content": "# BudE Updates\nFuture update packages go here."
+    },
 
 
-    "bude-engine/timeline.py": "class Timeline:\n    pass",
-
-
-    "bude-engine/__init__.py": "BudE Engine Package",
-
-
-    "updates/README.md": "# BudE Update System\n\nFuture versions are stored here.",
-
-
-    "docs/architecture.md": "# BudE Architecture\n\nModular AI Creative Studio",
-
-
-    "tests/test_status.py": "print('BudE Test System Ready')",
-
-
-    "README.md": "# BudE StoryBoard AI\n\nGenesis v0.1\n\nModular AI Creative Production Studio"
+    "README.md": {
+      "mode": "protected",
+      "content": "# BudE StoryBoard AI\nGenesis v0.1.1\n\nAI Creative Production Studio."
+    }
   }
 }
