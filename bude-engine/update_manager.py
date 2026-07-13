@@ -1,95 +1,49 @@
 import os
 import json
-import shutil
-from datetime import datetime
+
+UPDATE_FOLDER='updates'
+VERSION_FILE='version.json'
 
 
-UPDATE_FOLDER = "updates"
-LOG_FILE = "docs/update_log.txt"
+def get_current_version():
+    if os.path.exists(VERSION_FILE):
+        with open(VERSION_FILE,'r') as f:
+            return json.load(f).get('version','0.0.0')
+    return '0.0.0'
 
 
 def apply_updates():
 
-    print("================================")
-    print("BudE Update Manager")
-    print("================================")
+    current=get_current_version()
 
-    if not os.path.exists(UPDATE_FOLDER):
-        print("No updates folder found")
-        return
+    print('Current Version:',current)
 
+    for file in sorted(os.listdir(UPDATE_FOLDER)):
 
-    os.makedirs("docs", exist_ok=True)
-
-
-    for update_file in sorted(os.listdir(UPDATE_FOLDER)):
-
-        if not update_file.endswith(".json"):
+        if not file.endswith('.json'):
             continue
 
+        with open(f'{UPDATE_FOLDER}/{file}') as f:
+            update=json.load(f)
 
-        path = os.path.join(
-            UPDATE_FOLDER,
-            update_file
-        )
+        version=update.get('version')
 
+        if version <= current:
+            print('Skipping old update:',version)
+            continue
 
-        with open(path, "r", encoding="utf-8") as file:
-            update = json.load(file)
+        print('Applying update:',version)
 
+        for path,data in update.get('files',{}).items():
+            os.makedirs(os.path.dirname(path) or '.',exist_ok=True)
+            with open(path,'w') as out:
+                out.write(data.get('content',''))
 
-        print("Applying:", update.get("version"))
+        with open(VERSION_FILE,'w') as f:
+            json.dump(update,f,indent=4)
 
-
-        for filename, data in update.get("files", {}).items():
-
-            content = data.get("content", "")
-            mode = data.get("mode", "system")
-
-
-            if mode == "protected" and os.path.exists(filename):
-                print("Protected:", filename)
-                continue
+    print('Update process complete')
 
 
-            os.makedirs(
-                os.path.dirname(filename) or ".",
-                exist_ok=True
-            )
-
-
-            if os.path.exists(filename):
-                shutil.copy(
-                    filename,
-                    filename + ".backup"
-                )
-
-
-            with open(
-                filename,
-                "w",
-                encoding="utf-8"
-            ) as output:
-
-                output.write(content)
-
-
-            print("Updated:", filename)
-
-
-        with open(
-            LOG_FILE,
-            "a",
-            encoding="utf-8"
-        ) as log:
-
-            log.write(
-                f"{datetime.now()} Applied {update_file}\n"
-            )
-
-
-    print("BudE Updates Complete")
-
-
-if __name__ == "__main__":
+if __name__=='__main__':
     apply_updates()
