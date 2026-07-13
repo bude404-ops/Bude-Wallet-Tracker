@@ -1,0 +1,28 @@
+{
+  "genres": [
+    "Fantasy",
+    "Sci-Fi",
+    "Anime",
+    "Mystery",
+    "Horror",
+    "Adventure",
+    "Romance",
+    "Comedy",
+    "Action"
+  ],
+  "formats": [
+    "Short Story",
+    "Novel",
+    "Comic",
+    "Manga",
+    "TV Episode",
+    "Movie",
+    "Game Story"
+  ],
+  "structures": [
+    "Three Act",
+    "Hero Journey",
+    "Save The Cat",
+    "Episodic"
+  ]
+}

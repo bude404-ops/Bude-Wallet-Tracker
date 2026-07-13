@@ -1,18 +1,18 @@
 {
-    "version": "0.5.0",
-    "name": "World Builder Foundation",
+    "version": "0.6.0",
+    "name": "Story Engine Foundation",
     "files": {
-        "modules/world_builder/world_manager.py": {
+        "modules/story_engine/story_manager.py": {
             "mode": "system",
-            "content": "import os\nimport json\n\nWORLD_FOLDER='projects/worlds'\n\nclass WorldManager:\n\n    def create_world(self,name):\n        os.makedirs(WORLD_FOLDER,exist_ok=True)\n\n        world={\n            'name':name,\n            'type':'',\n            'history':'',\n            'regions':[],\n            'cities':[],\n            'cultures':[],\n            'languages':[],\n            'politics':[],\n            'religions':[],\n            'technology_level':'',\n            'species':[]\n        }\n\n        path=f'{WORLD_FOLDER}/{name}.json'\n\n        with open(path,'w') as file:\n            json.dump(world,file,indent=4)\n\n        return path\n\n    def load_world(self,name):\n        path=f'{WORLD_FOLDER}/{name}.json'\n\n        with open(path,'r') as file:\n            return json.load(file)\n"
+            "content": "import os\nimport json\n\nSTORY_FOLDER='projects/stories'\n\nclass StoryManager:\n\n    def create_story(self,title,idea):\n        os.makedirs(STORY_FOLDER,exist_ok=True)\n\n        story={\n            'title':title,\n            'idea':idea,\n            'genre':'',\n            'tone':'',\n            'world':'',\n            'characters':[],\n            'chapters':[],\n            'scenes':[]\n        }\n\n        path=f'{STORY_FOLDER}/{title}.json'\n\n        with open(path,'w') as file:\n            json.dump(story,file,indent=4)\n\n        return path\n\n    def add_chapter(self,story,chapter):\n        story['chapters'].append(chapter)\n        return story\n\n    def add_scene(self,story,scene):\n        story['scenes'].append(scene)\n        return story\n"
         },
-        "modules/world_builder/templates.json": {
+        "modules/story_engine/templates.json": {
             "mode": "system",
-            "content": "{\n  \"world_types\": [\n    \"Fantasy\",\n    \"Sci-Fi\",\n    \"Post-Apocalyptic\",\n    \"Cyberpunk\",\n    \"Medieval\",\n    \"Space Opera\",\n    \"Horror\",\n    \"Historical\"\n  ],\n  \"systems\": [\n    \"Kingdom\",\n    \"Empire\",\n    \"Federation\",\n    \"Corporation\",\n    \"Tribal\",\n    \"AI Civilization\"\n  ]\n}"
+            "content": "{\n  \"genres\": [\n    \"Fantasy\",\n    \"Sci-Fi\",\n    \"Anime\",\n    \"Mystery\",\n    \"Horror\",\n    \"Adventure\",\n    \"Romance\",\n    \"Comedy\",\n    \"Action\"\n  ],\n  \"formats\": [\n    \"Short Story\",\n    \"Novel\",\n    \"Comic\",\n    \"Manga\",\n    \"TV Episode\",\n    \"Movie\",\n    \"Game Story\"\n  ],\n  \"structures\": [\n    \"Three Act\",\n    \"Hero Journey\",\n    \"Save The Cat\",\n    \"Episodic\"\n  ]\n}"
         },
-        "dashboard/world_builder.html": {
+        "dashboard/story_creator.html": {
             "mode": "system",
-            "content": "<h1>World Builder</h1>\n<p>Create planets, kingdoms, civilizations, and histories.</p>\n<button>Create World</button>"
+            "content": "<h1>Story Creator</h1>\n<p>Create stories using BudE's creative engine.</p>\n<button>Create Story</button>"
         }
     }
 }
