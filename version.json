@@ -1,18 +1,18 @@
 {
-    "version": "0.8.0",
-    "name": "Storyboard Director Foundation",
+    "version": "0.9.0",
+    "name": "Art Studio Foundation",
     "files": {
-        "modules/storyboard/storyboard_manager.py": {
+        "modules/art_studio/art_manager.py": {
             "mode": "system",
-            "content": "import os\nimport json\n\nSTORYBOARD_FOLDER='projects/storyboards'\n\nclass StoryboardManager:\n\n    def create_storyboard(self,title):\n        os.makedirs(STORYBOARD_FOLDER,exist_ok=True)\n\n        storyboard={\n            'title':title,\n            'scenes':[]\n        }\n\n        path=f'{STORYBOARD_FOLDER}/{title}.json'\n\n        with open(path,'w') as file:\n            json.dump(storyboard,file,indent=4)\n\n        return path\n\n\n    def add_scene(self,storyboard,scene):\n        storyboard['scenes'].append(scene)\n        return storyboard\n\n\n    def create_scene(self,number,description):\n        return {\n            'scene':number,\n            'description':description,\n            'shots':[],\n            'dialogue':[],\n            'characters':[],\n            'camera':{},\n            'lighting':'',\n            'director_notes':''\n        }\n"
+            "content": "import os\nimport json\n\nART_FOLDER='projects/art_profiles'\n\nclass ArtManager:\n\n    def create_visual_profile(self,name):\n        os.makedirs(ART_FOLDER,exist_ok=True)\n\n        profile={\n            'name':name,\n            'style':'',\n            'character_reference':'',\n            'environment_reference':'',\n            'color_palette':[],\n            'camera_style':'',\n            'consistency_id':name\n        }\n\n        path=f'{ART_FOLDER}/{name}.json'\n\n        with open(path,'w') as file:\n            json.dump(profile,file,indent=4)\n\n        return path\n\n\n    def build_prompt(self,profile):\n        return f\"{profile['style']} style, {profile['character_reference']}\"\n"
         },
-        "modules/storyboard/templates.json": {
+        "modules/art_studio/style_presets.json": {
             "mode": "system",
-            "content": "{\n  \"camera_angles\": [\n    \"Wide Shot\",\n    \"Close Up\",\n    \"Medium Shot\",\n    \"Over Shoulder\",\n    \"Tracking Shot\",\n    \"Aerial\",\n    \"First Person\"\n  ],\n  \"shot_types\": [\n    \"Action\",\n    \"Dialogue\",\n    \"Emotion\",\n    \"Environment\",\n    \"Transition\"\n  ],\n  \"lighting\": [\n    \"Cinematic\",\n    \"Dark\",\n    \"Warm\",\n    \"Cold\",\n    \"Fantasy\",\n    \"Sci-Fi\"\n  ]\n}"
+            "content": "{\n  \"styles\": [\n    \"Anime\",\n    \"Manga\",\n    \"Comic Book\",\n    \"Cartoon\",\n    \"3D Animation\",\n    \"Watercolor\",\n    \"Oil Painting\",\n    \"Pencil Sketch\",\n    \"Cyberpunk\",\n    \"Fantasy\",\n    \"Sci-Fi\",\n    \"Horror\",\n    \"Noir\",\n    \"Pixel Art\",\n    \"Low Poly\"\n  ],\n  \"themes\": [\n    \"Medieval\",\n    \"Space Opera\",\n    \"Superhero\",\n    \"Samurai\",\n    \"Pirate\",\n    \"Viking\",\n    \"Post Apocalypse\"\n  ]\n}"
         },
-        "dashboard/storyboard.html": {
+        "dashboard/art_studio.html": {
             "mode": "system",
-            "content": "<h1>Storyboard Director</h1>\n<p>Create scenes, shots, camera directions, and director notes.</p>\n<button>Create Storyboard</button>"
+            "content": "<h1>Art Studio</h1>\n<p>Create visual styles, character references, and environment profiles.</p>\n<button>Create Art Profile</button>"
         }
     }
 }

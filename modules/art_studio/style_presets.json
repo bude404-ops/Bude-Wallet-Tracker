@@ -1,0 +1,28 @@
+{
+  "styles": [
+    "Anime",
+    "Manga",
+    "Comic Book",
+    "Cartoon",
+    "3D Animation",
+    "Watercolor",
+    "Oil Painting",
+    "Pencil Sketch",
+    "Cyberpunk",
+    "Fantasy",
+    "Sci-Fi",
+    "Horror",
+    "Noir",
+    "Pixel Art",
+    "Low Poly"
+  ],
+  "themes": [
+    "Medieval",
+    "Space Opera",
+    "Superhero",
+    "Samurai",
+    "Pirate",
+    "Viking",
+    "Post Apocalypse"
+  ]
+}
