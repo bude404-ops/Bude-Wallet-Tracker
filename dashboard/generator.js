@@ -1,4 +1,4 @@
-function generate(){
+async function generate(){
 
 let prompt=document.getElementById('prompt').value;
 let type=document.getElementById('type').value;
@@ -6,7 +6,8 @@ let type=document.getElementById('type').value;
 let output={
  category:type,
  prompt:prompt,
- result:'BudE generation request created'
+ status:'Sent to BudE AI Core',
+ result:'Generation pipeline active'
 };
 
 localStorage.setItem('bude_output',JSON.stringify(output));
