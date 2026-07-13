@@ -1,0 +1,31 @@
+{
+  "version": "1.7.0",
+  "name": "Local Model Bridge",
+
+  "files": {
+
+    "bude-engine/model_manager.py": {
+      "mode": "system",
+      "content": "import json\nimport os\n\nMODEL_FILE='bude-engine/models.json'\n\nclass ModelManager:\n\n    def __init__(self):\n        self.models=self.load()\n\n\n    def load(self):\n        if os.path.exists(MODEL_FILE):\n            with open(MODEL_FILE,'r') as file:\n                return json.load(file)\n\n        return {'models':[]}\n\n\n    def add_model(self,name,path):\n        self.models['models'].append({\n            'name':name,\n            'path':path,\n            'active':False\n        })\n\n        self.save()\n\n\n    def save(self):\n        with open(MODEL_FILE,'w') as file:\n            json.dump(self.models,file,indent=4)\n"
+    },
+
+
+    "bude-engine/models.json": {
+      "mode": "system",
+      "content": "{\n  \"models\": [\n  ]\n}"
+    },
+
+
+    "bude-engine/prompt_manager.py": {
+      "mode": "system",
+      "content": "class PromptManager:\n\n    def build(self,category,input_text):\n\n        templates={\n            'story':'Create a detailed story from this idea:',\n            'character':'Create a complete character profile from this idea:',\n            'world':'Create a detailed world from this idea:'\n        }\n\n        return templates.get(category,'Create content:')+' '+input_text\n"
+    },
+
+
+    "docs/ai_status.html": {
+      "mode": "system",
+      "content": "<h1>BudE AI Engine Status</h1>\n<p>Local model bridge active.</p>\n<p>Waiting for model connection.</p>"
+    }
+
+  }
+}
