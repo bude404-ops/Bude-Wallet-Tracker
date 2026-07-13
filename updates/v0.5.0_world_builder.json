@@ -1,0 +1,25 @@
+{
+  "version": "0.5.0",
+  "name": "World Builder Foundation",
+
+  "files": {
+
+    "modules/world_builder/world_manager.py": {
+      "mode": "system",
+      "content": "import os\nimport json\n\nWORLD_FOLDER='projects/worlds'\n\nclass WorldManager:\n\n    def create_world(self,name):\n        os.makedirs(WORLD_FOLDER,exist_ok=True)\n\n        world={\n            'name':name,\n            'type':'',\n            'history':'',\n            'regions':[],\n            'cities':[],\n            'cultures':[],\n            'languages':[],\n            'politics':[],\n            'religions':[],\n            'technology_level':'',\n            'species':[]\n        }\n\n        path=f'{WORLD_FOLDER}/{name}.json'\n\n        with open(path,'w') as file:\n            json.dump(world,file,indent=4)\n\n        return path\n\n    def load_world(self,name):\n        path=f'{WORLD_FOLDER}/{name}.json'\n\n        with open(path,'r') as file:\n            return json.load(file)\n"
+    },
+
+
+    "modules/world_builder/templates.json": {
+      "mode": "system",
+      "content": "{\n  \"world_types\": [\n    \"Fantasy\",\n    \"Sci-Fi\",\n    \"Post-Apocalyptic\",\n    \"Cyberpunk\",\n    \"Medieval\",\n    \"Space Opera\",\n    \"Horror\",\n    \"Historical\"\n  ],\n  \"systems\": [\n    \"Kingdom\",\n    \"Empire\",\n    \"Federation\",\n    \"Corporation\",\n    \"Tribal\",\n    \"AI Civilization\"\n  ]\n}"
+    },
+
+
+    "dashboard/world_builder.html": {
+      "mode": "system",
+      "content": "<h1>World Builder</h1>\n<p>Create planets, kingdoms, civilizations, and histories.</p>\n<button>Create World</button>"
+    }
+
+  }
+}
