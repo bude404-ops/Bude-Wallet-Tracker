@@ -1,0 +1,25 @@
+{
+  "version": "0.4.0",
+  "name": "Character Studio Foundation",
+
+  "files": {
+
+    "modules/character_studio/character_manager.py": {
+      "mode": "system",
+      "content": "import os\nimport json\n\nCHARACTER_FOLDER='projects/characters'\n\nclass CharacterManager:\n\n    def create_character(self,name):\n        os.makedirs(CHARACTER_FOLDER,exist_ok=True)\n\n        character={\n            'name':name,\n            'appearance':{},\n            'personality':{},\n            'background':'',\n            'relationships':[],\n            'skills':[],\n            'powers':[],\n            'weaknesses':[],\n            'style_presets':[]\n        }\n\n        path=f'{CHARACTER_FOLDER}/{name}.json'\n\n        with open(path,'w') as file:\n            json.dump(character,file,indent=4)\n\n        return path\n\n    def load_character(self,name):\n        path=f'{CHARACTER_FOLDER}/{name}.json'\n\n        with open(path,'r') as file:\n            return json.load(file)\n"
+    },
+
+
+    "modules/character_studio/presets.json": {
+      "mode": "system",
+      "content": "{\n  \"styles\": [\n    \"Anime\",\n    \"Manga\",\n    \"Comic\",\n    \"Cartoon\",\n    \"Fantasy\",\n    \"Sci-Fi\",\n    \"Cyberpunk\",\n    \"Medieval\",\n    \"Realistic\",\n    \"Chibi\"\n  ]\n}"
+    },
+
+
+    "dashboard/character_studio.html": {
+      "mode": "system",
+      "content": "<h1>Character Studio</h1>\n<p>Create and manage BudE characters.</p>\n<button>Create Character</button>"
+    }
+
+  }
+}
