@@ -1,1 +1,1 @@
-console.log('BudE Dashboard v0.2.0 Online');
+console.log('BudE Dashboard Online');
