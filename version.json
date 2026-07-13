@@ -1,18 +1,18 @@
 {
-    "version": "0.7.0",
-    "name": "Creative Memory Connection Layer",
+    "version": "0.8.0",
+    "name": "Storyboard Director Foundation",
     "files": {
-        "bude-engine/creative_memory.py": {
+        "modules/storyboard/storyboard_manager.py": {
             "mode": "system",
-            "content": "import json\nimport os\n\nMEMORY_FILE='database/creative_memory.json'\n\nclass CreativeMemory:\n\n    def __init__(self):\n        os.makedirs('database',exist_ok=True)\n\n        if not os.path.exists(MEMORY_FILE):\n            self.memory={\n                'projects':[],\n                'characters':[],\n                'worlds':[],\n                'stories':[]\n            }\n            self.save()\n        else:\n            self.load()\n\n\n    def load(self):\n        with open(MEMORY_FILE,'r') as file:\n            self.memory=json.load(file)\n\n\n    def save(self):\n        with open(MEMORY_FILE,'w') as file:\n            json.dump(self.memory,file,indent=4)\n\n\n    def add_item(self,category,item):\n        if category in self.memory:\n            self.memory[category].append(item)\n            self.save()\n\n\n    def get_items(self,category):\n        return self.memory.get(category,[])\n"
+            "content": "import os\nimport json\n\nSTORYBOARD_FOLDER='projects/storyboards'\n\nclass StoryboardManager:\n\n    def create_storyboard(self,title):\n        os.makedirs(STORYBOARD_FOLDER,exist_ok=True)\n\n        storyboard={\n            'title':title,\n            'scenes':[]\n        }\n\n        path=f'{STORYBOARD_FOLDER}/{title}.json'\n\n        with open(path,'w') as file:\n            json.dump(storyboard,file,indent=4)\n\n        return path\n\n\n    def add_scene(self,storyboard,scene):\n        storyboard['scenes'].append(scene)\n        return storyboard\n\n\n    def create_scene(self,number,description):\n        return {\n            'scene':number,\n            'description':description,\n            'shots':[],\n            'dialogue':[],\n            'characters':[],\n            'camera':{},\n            'lighting':'',\n            'director_notes':''\n        }\n"
         },
-        "modules/story_engine/context_manager.py": {
+        "modules/storyboard/templates.json": {
             "mode": "system",
-            "content": "class StoryContext:\n\n    def build_context(self,world,characters):\n        return {\n            'world':world,\n            'characters':characters\n        }\n"
+            "content": "{\n  \"camera_angles\": [\n    \"Wide Shot\",\n    \"Close Up\",\n    \"Medium Shot\",\n    \"Over Shoulder\",\n    \"Tracking Shot\",\n    \"Aerial\",\n    \"First Person\"\n  ],\n  \"shot_types\": [\n    \"Action\",\n    \"Dialogue\",\n    \"Emotion\",\n    \"Environment\",\n    \"Transition\"\n  ],\n  \"lighting\": [\n    \"Cinematic\",\n    \"Dark\",\n    \"Warm\",\n    \"Cold\",\n    \"Fantasy\",\n    \"Sci-Fi\"\n  ]\n}"
         },
-        "dashboard/creative_memory.html": {
+        "dashboard/storyboard.html": {
             "mode": "system",
-            "content": "<h1>Creative Memory</h1>\n<p>BudE remembers worlds, characters, and stories.</p>\n<button>View Memory</button>"
+            "content": "<h1>Storyboard Director</h1>\n<p>Create scenes, shots, camera directions, and director notes.</p>\n<button>Create Storyboard</button>"
         }
     }
 }
