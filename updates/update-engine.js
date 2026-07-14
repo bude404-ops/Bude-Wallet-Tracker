@@ -1,22 +1,23 @@
 /**
  * BudE StoryBoard AI
- * Update Evolution Engine v1
+ * Update Evolution Engine v2
  *
- * Genesis is retired.
- * Updates evolve the system.
+ * Genesis creates.
+ * Updates evolve.
+ *
+ * Safe execution system.
  */
 
 const fs = require("fs");
 const path = require("path");
 
-const ROOT = path.join(__dirname, "..");
+const ROOT = path.join(__dirname,"..");
 
-const VERSION_FILE = path.join(
-    ROOT,
-    "versions.json"
-);
+const VERSION_FILE =
+path.join(ROOT,"versions.json");
 
 const UPDATE_FOLDER = __dirname;
+
 
 
 function loadVersion(){
@@ -24,10 +25,11 @@ function loadVersion(){
     if(!fs.existsSync(VERSION_FILE)){
 
         throw new Error(
-            "No versions.json found. Genesis must run first."
+            "versions.json missing. Run Genesis first."
         );
 
     }
+
 
     return JSON.parse(
         fs.readFileSync(
@@ -59,48 +61,80 @@ function findUpdates(){
 
     return fs.readdirSync(UPDATE_FOLDER)
 
-        .filter(file =>
-            file.startsWith("update-v") &&
-            file.endsWith(".js")
-        )
+    .filter(file =>
+        file.startsWith("update-v") &&
+        file.endsWith(".js")
+    )
 
-        .sort();
+    .sort();
 
 }
 
 
 
-function executeUpdate(updateFile, version){
+function executeUpdate(file,version){
 
     console.log(
-        `Running ${updateFile}`
+        `Running ${file}`
     );
 
 
-    const update = require(
-        path.join(
-            UPDATE_FOLDER,
-            updateFile
-        )
-    );
+    try{
 
 
-    if(typeof update.run !== "function"){
-
-        throw new Error(
-            `${updateFile} missing run()`
+        const update =
+        require(
+            path.join(
+                UPDATE_FOLDER,
+                file
+            )
         );
+
+
+        if(typeof update.run !== "function"){
+
+            throw new Error(
+                "Missing run() function"
+            );
+
+        }
+
+
+        update.run();
+
+
+        version.completedUpdates.push(file);
+
+
+        console.log(
+            `${file} complete`
+        );
+
 
     }
 
+    catch(error){
 
-    update.run();
+        console.error(
+            `FAILED: ${file}`
+        );
 
 
-    version.completedUpdates.push(
-        updateFile
-    );
+        console.error(
+            error.message
+        );
 
+
+        version.systemHealth =
+        "degraded";
+
+
+        saveVersion(version);
+
+
+        process.exit(1);
+
+    }
 
 }
 
@@ -108,76 +142,68 @@ function executeUpdate(updateFile, version){
 
 function run(){
 
-    console.log(
-        "BudE Update Engine Starting..."
-    );
+console.log(
+"BudE Update Engine Starting..."
+);
 
 
-    const version = loadVersion();
-
-
-    if(!version.seedComplete){
-
-        throw new Error(
-            "Genesis not completed."
-        );
-
-    }
+const version =
+loadVersion();
 
 
 
-    const updates = findUpdates();
+if(!version.completedUpdates){
 
+version.completedUpdates=[];
 
-    for(const update of updates){
-
-        if(
-            !version.completedUpdates.includes(update)
-        ){
-
-            executeUpdate(
-                update,
-                version
-            );
-
-        }
-
-    }
+}
 
 
 
-    version.currentVersion =
-        `0.${version.completedUpdates.length + 1}`;
-
-
-    version.systemHealth =
-        "healthy";
-
-
-    version.lastUpdate =
-        new Date().toISOString();
+const updates =
+findUpdates();
 
 
 
-    saveVersion(version);
+for(const update of updates){
+
+
+if(
+!version.completedUpdates.includes(update)
+){
+
+
+executeUpdate(
+update,
+version
+);
+
+
+}
+
+}
 
 
 
-    console.log(
-`
-==============================
+version.currentVersion =
+`0.${version.completedUpdates.length + 1}`;
 
-Update Complete
 
-Current Version:
-${version.currentVersion}
+version.systemHealth =
+"healthy";
 
-System:
-Healthy
 
-==============================
-`
-    );
+version.lastUpdate =
+new Date().toISOString();
+
+
+saveVersion(version);
+
+
+console.log(
+"Update Evolution Complete"
+);
+
 
 }
 
