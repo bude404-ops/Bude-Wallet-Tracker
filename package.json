@@ -1,28 +1,20 @@
-
 {
-  "name":"bude-storyboard-ai",
-  "version":"0.3.5",
-  "private":true,
-
-  "scripts":{
-    "dev":"vite",
-    "build":"vite build",
-    "test":"echo No tests yet"
+  "name": "bude-storyboard-ai",
+  "version": "0.3.5",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "echo No tests yet"
   },
-
-  "dependencies":{
-
-    "react":"latest",
-    "react-dom":"latest"
-
+  "dependencies": {
+    "react": "latest",
+    "react-dom": "latest"
   },
-
-  "devDependencies":{
-
-    "vite":"latest",
-    "typescript":"latest",
-    "@vitejs/plugin-react":"latest",
-    "tailwindcss":"latest"
-
+  "devDependencies": {
+    "vite": "latest",
+    "typescript": "latest",
+    "@vitejs/plugin-react": "latest",
+    "tailwindcss": "latest"
   }
 }
