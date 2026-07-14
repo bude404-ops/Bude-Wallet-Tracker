@@ -1,0 +1,65 @@
+{
+  "system": "BudE StoryBoard AI",
+  "version": "3.0.0-alpha",
+
+  "modules": [
+
+    {
+      "id": "dashboard",
+      "name": "Main Dashboard",
+      "version": "1.0.0",
+      "enabled": true,
+      "files": [
+        "index.html",
+        "styles.css",
+        "app.js"
+      ]
+    },
+
+
+    {
+      "id": "creative_core",
+      "name": "Creative Core Engine",
+      "version": "0.1.0",
+      "enabled": false,
+      "files": [
+        "core/creativeCore.js"
+      ]
+    },
+
+
+    {
+      "id": "character_engine",
+      "name": "Character Creator",
+      "version": "0.1.0",
+      "enabled": false,
+      "files": [
+        "modules/character.js"
+      ]
+    },
+
+
+    {
+      "id": "world_engine",
+      "name": "World Builder",
+      "version": "0.1.0",
+      "enabled": false,
+      "files": [
+        "modules/world.js"
+      ]
+    },
+
+
+    {
+      "id": "story_engine",
+      "name": "Story Generator",
+      "version": "0.1.0",
+      "enabled": false,
+      "files": [
+        "modules/story.js"
+      ]
+    }
+
+  ]
+
+}
