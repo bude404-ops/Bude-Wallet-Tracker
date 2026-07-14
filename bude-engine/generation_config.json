@@ -1,7 +1,0 @@
-{
-  "story_generation":true,
-  "character_generation":true,
-  "world_generation":true,
-  "image_generation":false,
-  "video_generation":false
-}

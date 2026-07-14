@@ -1,7 +1,0 @@
-{
- "provider":"template",
- "model":"default",
- "localModels":true,
- "imageModels":false,
- "videoModels":false
-}
