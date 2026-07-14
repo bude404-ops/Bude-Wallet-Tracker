@@ -1,18 +1,21 @@
 {
-    "version": "2.4.0",
-    "name": "World Builder Engine",
-    "files": {
-        "docs/world_builder.js": {
-            "mode": "system",
-            "content": "function createWorld(idea,style){\n\nreturn {\nname:'Generated World',\nconcept:idea,\nstyle:style,\nhistory:'An ancient world shaped by '+idea,\nregions:[\n'Northern Territories',\n'Ancient Capital',\n'Unknown Frontier'\n],\ncivilizations:[\n'First Civilization',\n'New Kingdom'\n],\nfactions:[\n'Alliance',\n'Rival Order'\n],\ntechnology:'Based on '+style+' themes',\nconflict:'A major struggle threatens the world.',\nuniqueFeatures:[\n'Ancient mysteries',\n'Hidden locations'\n]\n};\n}"
+    "version": "3.0.2",
+    "name": "Creative Core Foundation",
+    "changes": [
+        {
+            "file": "core/creativeCore.js",
+            "action": "create",
+            "content": "const CreativeCore={\n\ncreateProject:function(name,idea,type){\n\nreturn {\n id:'PROJECT-'+Date.now(),\n name:name,\n idea:idea,\n type:type,\n created:new Date().toISOString(),\n characters:[],\n worlds:[],\n stories:[],\n assets:[]\n};\n\n},\n\nsaveProject:function(project){\n\nlet projects=JSON.parse(localStorage.getItem('bude_projects')||'[]');\n\nprojects.push(project);\n\nlocalStorage.setItem('bude_projects',JSON.stringify(projects));\n\n},\n\ngetProjects:function(){\n\nreturn JSON.parse(localStorage.getItem('bude_projects')||'[]');\n\n}\n\n};\n\nwindow.CreativeCore=CreativeCore;"
         },
-        "docs/world.js": {
-            "mode": "system",
-            "content": "function create(){\nlet idea=document.getElementById('idea').value;\nlet style=document.getElementById('style').value;\n\nlet result=createWorld(idea,style);\n\nlocalStorage.setItem('bude_world',JSON.stringify(result));\n\ndocument.getElementById('output').textContent=JSON.stringify(result,null,2);\n}"
+        {
+            "file": "app.js",
+            "action": "replace",
+            "content": "document.getElementById('app').innerHTML=`\n<div class='container'>\n<h1>\ud83e\udd16 BudE</h1>\n<h2>Creative Studio v3.0.2</h2>\n\n<div class='card'>\nCreate your first project\n</div>\n\n<input id='projectName' placeholder='Project Name'>\n\n<textarea id='idea' placeholder='Describe your idea'></textarea>\n\n<select id='type'>\n<option>Story</option>\n<option>Character</option>\n<option>World</option>\n</select>\n\n<button onclick='createProject()'>Create Project</button>\n\n<div class='card' id='output'></div>\n\n</div>`;\n\n\nfunction createProject(){\n\nlet project=CreativeCore.createProject(\n document.getElementById('projectName').value,\n document.getElementById('idea').value,\n document.getElementById('type').value\n);\n\nCreativeCore.saveProject(project);\n\noutput.innerHTML='<pre>'+JSON.stringify(project,null,2)+'</pre>';\n\n}"
         },
-        "docs/world.html": {
-            "mode": "system",
-            "content": "<!DOCTYPE html><html><head><title>BudE World Builder</title><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='stylesheet' href='styles.css'></head><body><main class='container'><header><h1>\ud83c\udf0e World Builder</h1></header><textarea id='idea' placeholder='Describe your world idea'></textarea><select id='style'><option>Fantasy</option><option>Sci-Fi</option><option>Post Apocalyptic</option><option>Modern</option></select><button class='button' onclick='create()'>Create World</button><pre id='output'>Waiting...</pre><a class='button' href='index.html'>\u2b05 Back</a></main><script src='world_builder.js'></script><script src='world.js'></script></body></html>"
+        {
+            "file": "index.html",
+            "action": "replace",
+            "content": "<!DOCTYPE html><html><head><title>BudE</title><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='stylesheet' href='styles.css'></head><body><div id='app'></div><script src='core/creativeCore.js'></script><script src='app.js'></script></body></html>"
         }
-    }
+    ]
 }
