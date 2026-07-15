@@ -6,17 +6,18 @@ id:string;
 
 name:string;
 
-description:string;
+stage:string;
 
-created:string;
+progress:number;
 
 }
 
 
 
 export function createProject(
-name:string,
-description:string
+
+name:string
+
 ):Project{
 
 
@@ -27,14 +28,13 @@ crypto.randomUUID(),
 
 name,
 
-description,
+stage:
+"Story Development",
 
-created:
-new Date().toISOString()
+progress:0
 
 };
 
 
 }
-
 

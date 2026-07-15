@@ -10,6 +10,15 @@ import StoryboardStudio from "./components/StoryboardStudio";
 import MediaStudio from "./components/MediaStudio";
 import AgentCenter from "./components/AgentCenter";
 import AICommandCenter from "./components/AICommandCenter";
+import StoryArchitect from "./components/StoryArchitect";
+import CharacterAgent from "./components/CharacterAgent";
+import WorldAgent from "./components/WorldAgent";
+import DirectorAgent from "./components/DirectorAgent";
+import EditorAgent from "./components/EditorAgent";
+import ProjectManager from "./components/ProjectManager";
+import ProductionWorkflow from "./components/ProductionWorkflow";
+import AIProviderPanel from "./components/AIProviderPanel";
+import AICommandCenter from "./components/AICommandCenter";
 import AICommandCenter from "./components/AICommandCenter";
 import AICommandCenter from "./components/AICommandCenter";
 import AICommandCenter from "./components/AICommandCenter";
@@ -217,6 +226,24 @@ Project creation module online.
 <MediaStudio />
 
 <AgentCenter />
+
+<AICommandCenter />
+
+<StoryArchitect />
+
+<CharacterAgent />
+
+<WorldAgent />
+
+<DirectorAgent />
+
+<EditorAgent />
+
+<ProjectManager />
+
+<ProductionWorkflow />
+
+<AIProviderPanel />
 
 <AICommandCenter />
 
