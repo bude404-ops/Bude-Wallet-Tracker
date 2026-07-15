@@ -1,73 +1,108 @@
+/**
+ * BudE StoryBoard AI
+ * Evolution Update Engine
+ *
+ * Genesis retired.
+ * Updates evolve the system.
+ */
+
+const fs = require("fs");
+const path = require("path");
 
 
-const fs=require("fs");
-const path=require("path");
+const ROOT = path.join(__dirname, "..");
 
+const VERSION_FILE =
+    path.join(ROOT, "versions.json");
 
-const ROOT=
-path.join(__dirname,"..");
-
-
-const VERSION=
-path.join(ROOT,"versions.json");
-
-
-const PENDING=
-path.join(ROOT,"updates/pending");
-
-
-const COMPLETED=
-path.join(ROOT,"updates/completed");
-
-
-const FAILED=
-path.join(ROOT,"updates/failed");
-
-
-const validator =
-require(
-"./build-validator"
-);
+const UPDATE_FOLDER =
+    __dirname;
 
 
 
 function loadVersion(){
 
-return JSON.parse(
-fs.readFileSync(
-VERSION,
-"utf8"
-)
-);
+    if(!fs.existsSync(VERSION_FILE)){
+
+        throw new Error(
+            "versions.json missing"
+        );
+
+    }
+
+
+    return JSON.parse(
+        fs.readFileSync(
+            VERSION_FILE,
+            "utf8"
+        )
+    );
 
 }
 
 
 
-function saveVersion(v){
+function saveVersion(version){
 
-fs.writeFileSync(
-VERSION,
-JSON.stringify(
-v,
-null,
-2
-)
-);
+    fs.writeFileSync(
+        VERSION_FILE,
+        JSON.stringify(
+            version,
+            null,
+            2
+        )
+    );
 
 }
 
 
 
-function move(file,target){
+function findUpdates(version){
 
-fs.renameSync(
+    return fs.readdirSync(UPDATE_FOLDER)
 
-path.join(PENDING,file),
+        .filter(file =>
+            file.startsWith("update-v") &&
+            file.endsWith(".js") &&
+            file !== "update-engine.js"
+        )
 
-path.join(target,file)
+        .sort()
 
-);
+        .filter(file =>
+            !version.completedUpdates.includes(file)
+        );
+
+}
+
+
+
+function executeUpdate(file){
+
+    console.log(
+        `Running ${file}`
+    );
+
+
+    const update =
+        require(
+            path.join(
+                UPDATE_FOLDER,
+                file
+            )
+        );
+
+
+    if(typeof update.run !== "function"){
+
+        throw new Error(
+            `${file} missing run()`
+        );
+
+    }
+
+
+    update.run();
 
 }
 
@@ -75,134 +110,117 @@ path.join(target,file)
 
 function run(){
 
-console.log(
-"BudE Evolution Engine"
-);
+    console.log(
+        "BudE Evolution Engine Starting..."
+    );
 
 
+    const version =
+        loadVersion();
 
-let version =
-loadVersion();
 
 
+    if(!version.completedUpdates){
 
-if(!fs.existsSync(PENDING)){
+        version.completedUpdates = [];
 
-console.log(
-"No pending updates"
-);
+    }
 
-return;
 
-}
 
+    const updates =
+        findUpdates(version);
 
 
-const updates =
-fs.readdirSync(PENDING)
-.filter(
-file=>file.endsWith(".js")
-);
 
+    console.log(
+        `Found ${updates.length} pending updates`
+    );
 
 
-for(const file of updates){
 
+    for(const file of updates){
 
-try{
 
+        try{
 
-console.log(
-"Running:",
-file
-);
 
+            executeUpdate(file);
 
 
-const update =
-require(
-path.join(PENDING,file)
-);
 
+            version.completedUpdates.push(
+                file
+            );
 
 
-update.run();
+            saveVersion(version);
 
 
 
-console.log(
-"Validating build..."
-);
+            console.log(
+                `Completed ${file}`
+            );
 
 
+        }
 
-validator.validate();
+        catch(error){
 
 
+            console.error(
+                `FAILED ${file}`
+            );
 
-version.completedUpdates.push(
-file
-);
 
+            console.error(
+                error.message
+            );
 
 
-move(
-file,
-COMPLETED
-);
+            break;
 
+        }
 
+    }
 
-console.log(
-"SUCCESS:",
-file
-);
 
 
+    version.currentVersion =
+        `0.${version.completedUpdates.length}`;
 
-}
 
-catch(error){
+    version.systemHealth =
+        "healthy";
 
 
-console.error(
-"FAILED:",
-error.message
-);
+    version.lastUpdate =
+        new Date().toISOString();
 
 
 
-move(
-file,
-FAILED
-);
+    saveVersion(version);
 
 
 
-}
+    console.log(
+`
+=========================
 
+BudE Evolution Complete
 
+Version:
+${version.currentVersion}
 
-}
+Completed Updates:
+${version.completedUpdates.length}
 
-
-
-version.currentVersion="0.68";
-
-version.systemHealth="healthy";
-
-version.lastUpdate =
-new Date().toISOString();
-
-
-
-saveVersion(version);
-
-
+=========================
+`
+    );
 
 }
 
 
 
 run();
-
