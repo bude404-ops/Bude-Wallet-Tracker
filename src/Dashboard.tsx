@@ -2,6 +2,14 @@
 
 import "./styles.css";
 import StoryStudio from "./components/StoryStudio";
+import CharacterStudio from "./components/CharacterStudio";
+import WorldBuilder from "./components/WorldBuilder";
+import EpisodePlanner from "./components/EpisodePlanner";
+import SceneStudio from "./components/SceneStudio";
+import StoryboardStudio from "./components/StoryboardStudio";
+import MediaStudio from "./components/MediaStudio";
+import AgentCenter from "./components/AgentCenter";
+import AICommandCenter from "./components/AICommandCenter";
 
 
 const agents=[
@@ -192,6 +200,22 @@ Project creation module online.
 
 
 <StoryStudio />
+
+<CharacterStudio />
+
+<WorldBuilder />
+
+<EpisodePlanner />
+
+<SceneStudio />
+
+<StoryboardStudio />
+
+<MediaStudio />
+
+<AgentCenter />
+
+<AICommandCenter />
 
 </main>
 

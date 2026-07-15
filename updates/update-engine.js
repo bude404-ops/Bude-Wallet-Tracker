@@ -1,19 +1,41 @@
-const fs = require("fs");
-const path = require("path");
 
-const ROOT = path.join(__dirname,"..");
 
-const VERSION_FILE =
+const fs=require("fs");
+const path=require("path");
+
+
+const ROOT=
+path.join(__dirname,"..");
+
+
+const VERSION=
 path.join(ROOT,"versions.json");
 
-const UPDATE_FOLDER = __dirname;
+
+const PENDING=
+path.join(ROOT,"updates/pending");
+
+
+const COMPLETED=
+path.join(ROOT,"updates/completed");
+
+
+const FAILED=
+path.join(ROOT,"updates/failed");
+
+
+const validator =
+require(
+"./build-validator"
+);
+
 
 
 function loadVersion(){
 
 return JSON.parse(
 fs.readFileSync(
-VERSION_FILE,
+VERSION,
 "utf8"
 )
 );
@@ -22,12 +44,12 @@ VERSION_FILE,
 
 
 
-function saveVersion(version){
+function saveVersion(v){
 
 fs.writeFileSync(
-VERSION_FILE,
+VERSION,
 JSON.stringify(
-version,
+v,
 null,
 2
 )
@@ -37,19 +59,14 @@ null,
 
 
 
-function findUpdates(version){
+function move(file,target){
 
-return fs.readdirSync(UPDATE_FOLDER)
+fs.renameSync(
 
-.filter(file =>
-file.startsWith("update-v") &&
-file.endsWith(".js")
-)
+path.join(PENDING,file),
 
-.sort()
+path.join(target,file)
 
-.filter(file =>
-!version.completedUpdates.includes(file)
 );
 
 }
@@ -59,8 +76,9 @@ file.endsWith(".js")
 function run(){
 
 console.log(
-"BudE Evolution Engine Starting..."
+"BudE Evolution Engine"
 );
+
 
 
 let version =
@@ -68,29 +86,31 @@ loadVersion();
 
 
 
-if(!version.completedUpdates){
+if(!fs.existsSync(PENDING)){
 
-version.completedUpdates=[];
+console.log(
+"No pending updates"
+);
+
+return;
 
 }
 
 
 
 const updates =
-findUpdates(version);
-
-
-
-console.log(
-"Pending updates:",
-updates.length
+fs.readdirSync(PENDING)
+.filter(
+file=>file.endsWith(".js")
 );
 
 
 
 for(const file of updates){
 
+
 try{
+
 
 console.log(
 "Running:",
@@ -98,25 +118,26 @@ file
 );
 
 
+
 const update =
 require(
-path.join(
-UPDATE_FOLDER,
-file
-)
+path.join(PENDING,file)
 );
 
-
-if(typeof update.run !== "function"){
-
-throw new Error(
-"Missing run()"
-);
-
-}
 
 
 update.run();
+
+
+
+console.log(
+"Validating build..."
+);
+
+
+
+validator.validate();
+
 
 
 version.completedUpdates.push(
@@ -124,57 +145,64 @@ file
 );
 
 
-saveVersion(version);
+
+move(
+file,
+COMPLETED
+);
+
 
 
 console.log(
-"Completed:",
+"SUCCESS:",
 file
 );
+
 
 
 }
 
 catch(error){
 
-console.error(
-"FAILED:",
-file
-);
 
 console.error(
+"FAILED:",
 error.message
 );
 
-break;
+
+
+move(
+file,
+FAILED
+);
+
+
 
 }
 
+
+
 }
 
 
 
-version.currentVersion =
-"0."+version.completedUpdates.length;
+version.currentVersion="0.68";
 
-
-version.systemHealth =
-"healthy";
-
+version.systemHealth="healthy";
 
 version.lastUpdate =
 new Date().toISOString();
 
 
+
 saveVersion(version);
 
-
-console.log(
-"Evolution Complete"
-);
 
 
 }
 
 
+
 run();
+
