@@ -8,22 +8,38 @@
 const fs = require("fs");
 const path = require("path");
 
-const ROOT = path.join(__dirname,"..");
+const ROOT = path.join(__dirname, "..");
 
 
-function write(file,content){
+function write(file, content){
 
-const target = path.join(ROOT,file);
+    const target =
+        path.join(ROOT, file);
 
-const folder = path.dirname(target);
+    const folder =
+        path.dirname(target);
 
-if(!fs.existsSync(folder)){
-fs.mkdirSync(folder,{recursive:true});
-}
 
-fs.writeFileSync(target,content);
+    if(!fs.existsSync(folder)){
 
-console.log("Created:",file);
+        fs.mkdirSync(
+            folder,
+            { recursive:true }
+        );
+
+    }
+
+
+    fs.writeFileSync(
+        target,
+        content
+    );
+
+
+    console.log(
+        "Created:",
+        file
+    );
 
 }
 
@@ -31,39 +47,41 @@ console.log("Created:",file);
 
 function run(){
 
-console.log(
-"Installing AI Command Pipeline..."
-);
+    console.log(
+        "Installing AI Command Pipeline..."
+    );
+
+
+    const folders = [
+
+        "commands",
+        "commands/queue"
+
+    ];
+
+
+    folders.forEach(folder=>{
+
+        const dir =
+            path.join(ROOT, folder);
+
+
+        if(!fs.existsSync(dir)){
+
+            fs.mkdirSync(
+                dir,
+                {recursive:true}
+            );
+
+        }
+
+    });
 
 
 
-const folders=[
-
-"commands",
-"commands/queue"
-
-];
-
-
-folders.forEach(folder=>{
-
-const dir =
-path.join(ROOT,folder);
-
-if(!fs.existsSync(dir)){
-fs.mkdirSync(dir,{recursive:true});
-}
-
-});
-
-
-
-write(
-
-"src/services/commandService.ts",
-
+    write(
+        "src/services/commandService.ts",
 `
-
 export interface AICommand {
 
 id:string;
@@ -75,12 +93,11 @@ status:string;
 }
 
 
-
 export function createCommand(
 
 prompt:string
 
-):AICommand{
+):AICommand {
 
 
 return {
@@ -96,19 +113,14 @@ status:"queued"
 
 
 }
-
 `
-
-);
-
+    );
 
 
-write(
 
-"src/components/AICommandCenter.tsx",
-
+    write(
+        "src/components/AICommandCenter.tsx",
 `
-
 import {useState} from "react";
 
 
@@ -124,11 +136,14 @@ const [tasks,setTasks]=useState<string[]>([]);
 function submit(){
 
 
+if(!prompt) return;
+
+
 setTasks([
 
 ...tasks,
 
-"Processing: "+prompt
+"Processing: " + prompt
 
 ]);
 
@@ -142,7 +157,6 @@ setPrompt("");
 return (
 
 <div className="card">
-
 
 <h2>
 AI Command Center
@@ -194,120 +208,147 @@ tasks.map((task,i)=>(
 
 
 }
-
 `
-
-);
-
-
-
-const dashboard =
-path.join(ROOT,"src/Dashboard.tsx");
-
-
-if(fs.existsSync(dashboard)){
-
-
-let code =
-fs.readFileSync(
-dashboard,
-"utf8"
-);
+    );
 
 
 
-code = code.replace(
 
-'import AgentCenter from "./components/AgentCenter";',
-
-'import AgentCenter from "./components/AgentCenter";\nimport AICommandCenter from "./components/AICommandCenter";'
-
-);
-
+    const dashboard =
+        path.join(
+            ROOT,
+            "src/Dashboard.tsx"
+        );
 
 
-code = code.replace(
-
-"<AgentCenter />",
-
-"<AgentCenter />\n\n<AICommandCenter />"
-
-);
+    if(fs.existsSync(dashboard)){
 
 
+        let code =
+            fs.readFileSync(
+                dashboard,
+                "utf8"
+            );
 
-fs.writeFileSync(
-dashboard,
-code
-);
 
+        if(
+            !code.includes(
+                "AICommandCenter"
+            )
+        ){
+
+
+            code = code.replace(
+
+                'import AgentCenter from "./components/AgentCenter";',
+
+                'import AgentCenter from "./components/AgentCenter";\nimport AICommandCenter from "./components/AICommandCenter";'
+
+            );
+
+
+            code = code.replace(
+
+                "<AgentCenter />",
+
+                "<AgentCenter />\n\n<AICommandCenter />"
+
+            );
+
+
+            fs.writeFileSync(
+                dashboard,
+                code
+            );
+
+
+            console.log(
+                "Updated Dashboard"
+            );
+
+        }
+
+    }
+
+
+
+
+    const versionFile =
+        path.join(
+            ROOT,
+            "versions.json"
+        );
+
+
+    if(fs.existsSync(versionFile)){
+
+
+        let version =
+            JSON.parse(
+                fs.readFileSync(
+                    versionFile,
+                    "utf8"
+                )
+            );
+
+
+        if(!version.installedModules){
+
+            version.installedModules=[];
+
+        }
+
+
+
+        if(
+            !version.installedModules.includes(
+                "ai-command-pipeline"
+            )
+        ){
+
+            version.installedModules.push(
+                "ai-command-pipeline"
+            );
+
+        }
+
+
+
+        version.systemHealth =
+            "healthy";
+
+
+        version.lastUpdate =
+            new Date().toISOString();
+
+
+
+        fs.writeFileSync(
+
+            versionFile,
+
+            JSON.stringify(
+                version,
+                null,
+                2
+            )
+
+        );
+
+    }
+
+
+
+    console.log(
+        "AI Command Pipeline installed."
+    );
 
 }
 
 
 
-const versionFile =
-path.join(ROOT,"versions.json");
+module.exports = {
 
+    run
 
-if(fs.existsSync(versionFile)){
-
-
-let version =
-JSON.parse(
-fs.readFileSync(
-versionFile,
-"utf8"
-)
-);
-
-
-if(!version.completedUpdates)
-version.completedUpdates=[];
-
-
-if(!version.installedModules)
-version.installedModules=[];
-
-
-version.completedUpdates.push(
-"update-v0047.js"
-);
-
-
-version.installedModules.push(
-"ai-command-pipeline"
-);
-
-
-version.currentVersion="0.77";
-
-
-version.systemHealth="healthy";
-
-
-version.lastUpdate =
-new Date().toISOString();
-
-
-
-fs.writeFileSync(
-version,
-JSON.stringify(version,null,2)
-);
-
-
-}
-
-
-console.log(
-"AI Command Pipeline installed."
-);
-
-
-}
-
-
-module.exports={
-run
 };
