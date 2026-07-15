@@ -1,5 +1,4 @@
 
-
 import {useState} from "react";
 
 
@@ -15,11 +14,14 @@ const [tasks,setTasks]=useState<string[]>([]);
 function submit(){
 
 
+if(!prompt) return;
+
+
 setTasks([
 
 ...tasks,
 
-"Processing: "+prompt
+"Processing: " + prompt
 
 ]);
 
@@ -33,7 +35,6 @@ setPrompt("");
 return (
 
 <div className="card">
-
 
 <h2>
 AI Command Center
@@ -85,4 +86,3 @@ tasks.map((task,i)=>(
 
 
 }
-

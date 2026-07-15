@@ -1,5 +1,4 @@
 
-
 export interface AICommand {
 
 id:string;
@@ -11,12 +10,11 @@ status:string;
 }
 
 
-
 export function createCommand(
 
 prompt:string
 
-):AICommand{
+):AICommand {
 
 
 return {
@@ -32,4 +30,3 @@ status:"queued"
 
 
 }
-
