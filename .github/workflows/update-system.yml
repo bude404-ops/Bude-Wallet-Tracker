@@ -1,78 +1,88 @@
-name: BudE Evolution System
+name: BudE StoryBoard AI Evolution + Deploy
 
 on:
-
   push:
-
     branches:
       - main
-
-    paths:
-      - "updates/**"
 
   workflow_dispatch:
 
 
 permissions:
-
   contents: write
+  pages: write
+  id-token: write
+
+
+concurrency:
+  group: bude-evolution
+  cancel-in-progress: false
 
 
 jobs:
 
-  evolution:
-
+  evolve-build-deploy:
 
     runs-on: ubuntu-latest
 
 
     steps:
 
-
-    - name: Checkout
+    - name: Checkout Repository
       uses: actions/checkout@v4
-
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
 
 
     - name: Setup Node
       uses: actions/setup-node@v4
-
       with:
-
         node-version: 20
 
 
-
-    - name: Run Evolution Engine
-      run: |
-
-        node updates/update-engine.js
+    - name: Install Dependencies
+      run: npm install
 
 
-
-    - name: Validate Build
-
-      run: |
-
-        npm install
-
-        npm run build
+    - name: Run BudE Evolution Engine
+      run: node updates/update-engine.js
 
 
-
-    - name: Commit Evolution
-
+    - name: Save Evolution Changes
       run: |
 
         git config user.name "BudE Evolution Bot"
 
-        git config user.email "actions@github.com"
+        git config user.email "bude-evolution@users.noreply.github.com"
 
+        git status
 
         git add .
 
+        if git diff --cached --quiet; then
 
-        git commit -m "BudE automatic evolution update" || echo "No changes"
+          echo "No evolution changes detected"
+
+        else
+
+          git commit -m "BudE Evolution automatic update"
+
+          git push origin HEAD:main
+
+        fi
 
 
-        git push
+    - name: Build React App
+      run: npm run build
+
+
+    - name: Upload Pages Artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./docs
+
+
+    - name: Deploy Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
