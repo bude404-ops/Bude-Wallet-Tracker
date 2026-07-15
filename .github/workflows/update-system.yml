@@ -1,24 +1,16 @@
-name: BudE StoryBoard AI Evolution System
-
+name: BudE Evolution System
 
 on:
 
   push:
 
     branches:
-
       - main
 
     paths:
-
       - "updates/**"
-      - "versions.json"
-      - "package.json"
-      - "vite.config.ts"
-
 
   workflow_dispatch:
-
 
 
 permissions:
@@ -26,36 +18,23 @@ permissions:
   contents: write
 
 
-
 jobs:
 
-
   evolution:
-
-
-    name: Execute BudE Evolution Updates
 
 
     runs-on: ubuntu-latest
 
 
-
     steps:
 
 
-
-    - name: Checkout Repository
-
+    - name: Checkout
       uses: actions/checkout@v4
-
-      with:
-
-        fetch-depth: 0
 
 
 
     - name: Setup Node
-
       uses: actions/setup-node@v4
 
       with:
@@ -65,61 +44,35 @@ jobs:
 
 
     - name: Run Evolution Engine
-
       run: |
 
         node updates/update-engine.js
 
 
 
-    - name: Validate System
-
-      run: |
-
-        test -f versions.json
-
-        test -d src
-
-        test -d updates
-
-        echo "System validation complete"
-
-
-
-    - name: Install Dependencies
-
-      if: hashFiles('package.json') != ''
+    - name: Validate Build
 
       run: |
 
         npm install
 
-
-
-    - name: Build Test
-
-      if: hashFiles('package.json') != ''
-
-      run: |
-
         npm run build
 
 
 
-    - name: Commit Evolution Changes
+    - name: Commit Evolution
 
       run: |
-
 
         git config user.name "BudE Evolution Bot"
 
         git config user.email "actions@github.com"
 
 
-        git add src updates versions.json package.json vite.config.ts index.html
+        git add .
 
 
-        git commit -m "BudE evolution update [skip ci]" || echo "No changes"
+        git commit -m "BudE automatic evolution update" || echo "No changes"
 
 
         git push
