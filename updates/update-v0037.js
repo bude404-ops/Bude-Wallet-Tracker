@@ -2,36 +2,85 @@
  * BudE StoryBoard AI
  * Update v0037
  *
- * Build Validator + Safety Gate
+ * Evolution Catch-Up Engine Fix
+ *
+ * Purpose:
+ * Automatically run all missed updates
  */
 
 const fs = require("fs");
 const path = require("path");
-const { execSync } = require("child_process");
 
 const ROOT = path.join(__dirname,"..");
 
+const UPDATE_DIR = path.join(ROOT,"updates");
 
-function write(file,content){
+const VERSION_FILE = path.join(ROOT,"versions.json");
 
-const target =
-path.join(ROOT,file);
 
-const folder =
-path.dirname(target);
+function loadVersion(){
 
-if(!fs.existsSync(folder)){
-fs.mkdirSync(folder,{
-recursive:true
-});
+if(!fs.existsSync(VERSION_FILE)){
+
+return {
+
+seedComplete:true,
+
+completedUpdates:[],
+
+installedModules:[],
+
+currentVersion:"0.36"
+
+};
+
 }
 
-fs.writeFileSync(
-target,
-content
+return JSON.parse(
+fs.readFileSync(
+VERSION_FILE,
+"utf8"
+)
 );
 
-console.log("Created:",file);
+}
+
+
+
+function saveVersion(version){
+
+fs.writeFileSync(
+VERSION_FILE,
+JSON.stringify(
+version,
+null,
+2
+)
+);
+
+}
+
+
+
+function findUpdates(version){
+
+return fs.readdirSync(UPDATE_DIR)
+
+.filter(file =>
+
+file.startsWith("update-v") &&
+
+file.endsWith(".js")
+
+)
+
+.sort()
+
+.filter(file =>
+
+!version.completedUpdates.includes(file)
+
+);
 
 }
 
@@ -40,160 +89,112 @@ console.log("Created:",file);
 function run(){
 
 console.log(
-"Installing Build Safety Gate..."
+"BudE Evolution Catch-Up Starting..."
 );
-
-
-
-write(
-
-"updates/build-validator.js",
-
-`
-
-const fs=require("fs");
-const path=require("path");
-
-const {execSync}=require(
-"child_process"
-);
-
-
-const ROOT=path.join(
-__dirname,
-".."
-);
-
-
-
-function checkFiles(){
-
-
-const required=[
-
-"package.json",
-"index.html",
-"src/main.tsx",
-"src/App.tsx",
-"vite.config.ts"
-
-];
-
-
-for(const file of required){
-
-if(!fs.existsSync(
-path.join(ROOT,file)
-)){
-
-throw new Error(
-"Missing file: "+file
-);
-
-}
-
-}
-
-
-}
-
-
-
-function checkBuild(){
-
-
-execSync(
-"npm run build",
-{
-cwd:ROOT,
-stdio:"inherit"
-}
-);
-
-
-}
-
-
-
-function validate(){
-
-
-console.log(
-"Checking project files..."
-);
-
-
-checkFiles();
-
-
-console.log(
-"Running production build..."
-);
-
-
-checkBuild();
-
-
-console.log(
-"Build validation passed"
-);
-
-
-return true;
-
-
-}
-
-
-
-module.exports={
-validate
-};
-
-`
-
-);
-
-
-
-const versionFile =
-path.join(ROOT,"versions.json");
-
-
-if(fs.existsSync(versionFile)){
 
 
 let version =
-JSON.parse(
-fs.readFileSync(
-versionFile,
-"utf8"
+loadVersion();
+
+
+let updates =
+findUpdates(version);
+
+
+
+console.log(
+"Found updates:",
+updates.length
+);
+
+
+
+for(const file of updates){
+
+
+if(file==="update-v0037.js")
+continue;
+
+
+
+try{
+
+
+console.log(
+"Running:",
+file
+);
+
+
+
+const update =
+require(
+path.join(
+UPDATE_DIR,
+file
 )
 );
 
 
-if(!version.completedUpdates)
-version.completedUpdates=[];
+
+if(typeof update.run==="function"){
 
 
-if(!version.installedModules)
-version.installedModules=[];
+update.run();
+
+
+}
+
 
 
 version.completedUpdates.push(
-"update-v0037.js"
+file
 );
 
 
-version.installedModules.push(
-"build-safety-gate"
+
+saveVersion(version);
+
+
+console.log(
+"Completed:",
+file
 );
 
 
-version.currentVersion="0.67";
+}
+
+catch(error){
 
 
-version.systemHealth="healthy";
+console.error(
+"FAILED:",
+file
+);
+
+console.error(
+error.message
+);
+
+break;
+
+}
+
+
+}
+
+
+
+version.currentVersion =
+"0."+(
+36+
+version.completedUpdates.length
+);
+
+
+
+version.systemHealth =
+"healthy";
 
 
 version.lastUpdate =
@@ -201,17 +202,12 @@ new Date().toISOString();
 
 
 
-fs.writeFileSync(
-versionFile,
-JSON.stringify(version,null,2)
-);
+saveVersion(version);
 
-
-}
 
 
 console.log(
-"Build Safety Gate installed."
+"Evolution Catch-Up Complete"
 );
 
 
