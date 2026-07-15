@@ -13,11 +13,55 @@ font-family:Arial,sans-serif;
 }
 
 
-.app{
+.layout{
 
-padding:30px;
+display:flex;
+
+min-height:100vh;
 
 }
+
+
+.sidebar{
+
+width:220px;
+
+background:#111;
+
+padding:20px;
+
+}
+
+
+.sidebar button{
+
+display:block;
+
+width:100%;
+
+margin:8px 0;
+
+padding:12px;
+
+background:#222;
+
+color:white;
+
+border:1px solid #444;
+
+border-radius:8px;
+
+}
+
+
+main{
+
+padding:25px;
+
+flex:1;
+
+}
+
 
 
 .grid{
@@ -32,6 +76,7 @@ gap:20px;
 }
 
 
+
 .card{
 
 background:#151515;
@@ -41,6 +86,25 @@ border:1px solid #333;
 border-radius:15px;
 
 padding:20px;
+
+}
+
+
+
+@media(max-width:700px){
+
+.layout{
+
+display:block;
+
+}
+
+
+.sidebar{
+
+width:auto;
+
+}
 
 }
 

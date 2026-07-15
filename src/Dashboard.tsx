@@ -3,12 +3,71 @@
 import "./styles.css";
 
 
+const agents=[
+
+"Executive AI",
+"Story Architect AI",
+"World Builder AI",
+"Character AI",
+"Script AI",
+"Storyboard AI",
+"Media AI",
+"Voice AI",
+"Music AI",
+"Editor AI"
+
+];
+
+
 export default function Dashboard(){
 
 
 return (
 
-<div className="app">
+<div className="layout">
+
+
+<aside className="sidebar">
+
+<h2>
+BudE AI
+</h2>
+
+
+<button>
+Dashboard
+</button>
+
+<button>
+Projects
+</button>
+
+<button>
+Characters
+</button>
+
+<button>
+Worlds
+</button>
+
+<button>
+Episodes
+</button>
+
+<button>
+Production
+</button>
+
+<button>
+Plugins
+</button>
+
+
+</aside>
+
+
+
+<main>
 
 
 <h1>
@@ -17,7 +76,7 @@ BudE StoryBoard AI
 
 
 <p>
-AI Creative Studio Online
+AI Creative Production Studio
 </p>
 
 
@@ -32,7 +91,7 @@ Project Center
 </h2>
 
 <p>
-Create and manage productions
+Create and manage creative projects
 </p>
 
 </div>
@@ -42,11 +101,12 @@ Create and manage productions
 <div className="card">
 
 <h2>
-AI Command
+AI Command Center
 </h2>
 
 <p>
-Agents ready
+Agents Online:
+{agents.length}
 </p>
 
 </div>
@@ -56,11 +116,11 @@ Agents ready
 <div className="card">
 
 <h2>
-Story Engine
+Production Pipeline
 </h2>
 
 <p>
-Worlds, characters, scripts
+Concept → Story → Script → Media → Export
 </p>
 
 </div>
@@ -70,17 +130,50 @@ Worlds, characters, scripts
 <div className="card">
 
 <h2>
-Production
+System Health
 </h2>
 
 <p>
-Storyboard and media pipeline
+Genesis:
+Complete
+</p>
+
+<p>
+Evolution:
+Active
 </p>
 
 </div>
 
 
 </div>
+
+
+
+<div className="card">
+
+<h2>
+AI Agents
+</h2>
+
+
+{
+
+agents.map(agent=>(
+
+<p key={agent}>
+🟢 {agent}
+</p>
+
+))
+
+}
+
+
+</div>
+
+
+</main>
 
 
 </div>
