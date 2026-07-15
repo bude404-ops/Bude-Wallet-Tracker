@@ -10,6 +10,7 @@ import StoryboardStudio from "./components/StoryboardStudio";
 import MediaStudio from "./components/MediaStudio";
 import AgentCenter from "./components/AgentCenter";
 import AICommandCenter from "./components/AICommandCenter";
+import AICommandCenter from "./components/AICommandCenter";
 import StoryArchitect from "./components/StoryArchitect";
 import CharacterAgent from "./components/CharacterAgent";
 import WorldAgent from "./components/WorldAgent";
@@ -226,6 +227,8 @@ Project creation module online.
 <MediaStudio />
 
 <AgentCenter />
+
+<AICommandCenter />
 
 <AICommandCenter />
 
