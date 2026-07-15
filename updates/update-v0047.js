@@ -11,7 +11,7 @@ const path = require("path");
 const ROOT = path.join(__dirname, "..");
 
 
-function write(file, content){
+function createFile(file, content){
 
     const target =
         path.join(ROOT, file);
@@ -24,7 +24,9 @@ function write(file, content){
 
         fs.mkdirSync(
             folder,
-            { recursive:true }
+            {
+                recursive:true
+            }
         );
 
     }
@@ -52,25 +54,27 @@ function run(){
     );
 
 
-    const folders = [
+    // Create command folders
 
+    [
         "commands",
         "commands/queue"
+    ].forEach(folder=>{
 
-    ];
+        const location =
+            path.join(
+                ROOT,
+                folder
+            );
 
 
-    folders.forEach(folder=>{
-
-        const dir =
-            path.join(ROOT, folder);
-
-
-        if(!fs.existsSync(dir)){
+        if(!fs.existsSync(location)){
 
             fs.mkdirSync(
-                dir,
-                {recursive:true}
+                location,
+                {
+                    recursive:true
+                }
             );
 
         }
@@ -79,38 +83,34 @@ function run(){
 
 
 
-    write(
+    createFile(
         "src/services/commandService.ts",
 `
 export interface AICommand {
 
-id:string;
+    id:string;
 
-prompt:string;
+    prompt:string;
 
-status:string;
+    status:string;
 
 }
 
 
 export function createCommand(
-
-prompt:string
-
+    prompt:string
 ):AICommand {
 
+    return {
 
-return {
+        id:
+        crypto.randomUUID(),
 
-id:
-crypto.randomUUID(),
+        prompt,
 
-prompt,
+        status:"queued"
 
-status:"queued"
-
-};
-
+    };
 
 }
 `
@@ -118,14 +118,13 @@ status:"queued"
 
 
 
-    write(
+    createFile(
         "src/components/AICommandCenter.tsx",
 `
 import {useState} from "react";
 
 
 export default function AICommandCenter(){
-
 
 const [prompt,setPrompt]=useState("");
 
@@ -135,20 +134,19 @@ const [tasks,setTasks]=useState<string[]>([]);
 
 function submit(){
 
-
-if(!prompt) return;
-
-
-setTasks([
-
-...tasks,
-
-"Processing: " + prompt
-
-]);
+    if(!prompt) return;
 
 
-setPrompt("");
+    setTasks([
+
+        ...tasks,
+
+        "Processing: " + prompt
+
+    ]);
+
+
+    setPrompt("");
 
 }
 
@@ -177,11 +175,8 @@ e=>setPrompt(e.target.value)
 
 
 <button onClick={submit}>
-
 Send Command
-
 </button>
-
 
 
 <h3>
@@ -191,9 +186,9 @@ Task Queue
 
 {
 
-tasks.map((task,i)=>(
+tasks.map((task,index)=>(
 
-<p key={i}>
+<p key={index}>
 🤖 {task}
 </p>
 
@@ -206,13 +201,13 @@ tasks.map((task,i)=>(
 
 );
 
-
 }
 `
     );
 
 
 
+    // Add dashboard component if dashboard exists
 
     const dashboard =
         path.join(
@@ -231,14 +226,11 @@ tasks.map((task,i)=>(
             );
 
 
-        if(
-            !code.includes(
-                "AICommandCenter"
-            )
-        ){
+        if(!code.includes("AICommandCenter")){
 
 
-            code = code.replace(
+            code =
+            code.replace(
 
                 'import AgentCenter from "./components/AgentCenter";',
 
@@ -247,7 +239,8 @@ tasks.map((task,i)=>(
             );
 
 
-            code = code.replace(
+            code =
+            code.replace(
 
                 "<AgentCenter />",
 
@@ -263,84 +256,17 @@ tasks.map((task,i)=>(
 
 
             console.log(
-                "Updated Dashboard"
+                "Dashboard updated"
             );
 
         }
-
-    }
-
-
-
-
-    const versionFile =
-        path.join(
-            ROOT,
-            "versions.json"
-        );
-
-
-    if(fs.existsSync(versionFile)){
-
-
-        let version =
-            JSON.parse(
-                fs.readFileSync(
-                    versionFile,
-                    "utf8"
-                )
-            );
-
-
-        if(!version.installedModules){
-
-            version.installedModules=[];
-
-        }
-
-
-
-        if(
-            !version.installedModules.includes(
-                "ai-command-pipeline"
-            )
-        ){
-
-            version.installedModules.push(
-                "ai-command-pipeline"
-            );
-
-        }
-
-
-
-        version.systemHealth =
-            "healthy";
-
-
-        version.lastUpdate =
-            new Date().toISOString();
-
-
-
-        fs.writeFileSync(
-
-            versionFile,
-
-            JSON.stringify(
-                version,
-                null,
-                2
-            )
-
-        );
 
     }
 
 
 
     console.log(
-        "AI Command Pipeline installed."
+        "AI Command Pipeline installed successfully."
     );
 
 }
